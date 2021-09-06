@@ -24,9 +24,9 @@ namespace Isu.Entities
                 return false;
 
             if (groupName[2] < '0' || groupName[2] > '4') return false;
-            for (int i = 0; i < 2; ++i)
+            for (int charNum = 0; charNum < 2; ++charNum)
             {
-                if (groupName[3 + i] >= '0' && groupName[3 + i] <= '9')
+                if (groupName[3 + charNum] >= '0' && groupName[3 + charNum] <= '9')
                     return true;
             }
 
