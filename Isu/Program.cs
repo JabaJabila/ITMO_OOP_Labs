@@ -1,9 +1,4 @@
-﻿using System;
-using Isu.DataTypes;
-using Isu.Entities;
-using Isu.Services;
-
-namespace Isu
+﻿namespace Isu
 {
     internal class Program
     {
