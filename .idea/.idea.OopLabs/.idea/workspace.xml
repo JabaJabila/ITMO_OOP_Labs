@@ -10,9 +10,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="5982c155-83f8-49a0-a0d7-ed56e3fc3693" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/Isu.Tests/IsuServiceTest.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Isu.Tests/IsuServiceTest.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Isu/Services/IIsuService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Isu/Services/IIsuService.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Isu/Tools/IsuException.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Isu/Tools/IsuException.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.OopLabs/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.OopLabs/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Isu/DataTypes/CourseNumber.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Isu/DataTypes/CourseNumber.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Isu/Entities/Course.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Isu/Entities/Group.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Isu/Entities/Group.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Isu/Entities/Student.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Isu/Entities/Student.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Isu/Program.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Isu/Program.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Isu/Services/IsuService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Isu/Services/IsuService.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -164,7 +168,7 @@
       <updated>1630778383040</updated>
       <workItem from="1630778413650" duration="13482000" />
       <workItem from="1630851278146" duration="9000" />
-      <workItem from="1630913080598" duration="11565000" />
+      <workItem from="1630913080598" duration="20237000" />
     </task>
     <servers />
   </component>

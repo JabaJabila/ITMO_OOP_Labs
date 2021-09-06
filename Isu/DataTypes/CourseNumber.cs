@@ -4,17 +4,13 @@ namespace Isu.DataTypes
 {
     public class CourseNumber
     {
-        private uint _number;
-        public CourseNumber(uint number)
+        public CourseNumber(int number)
         {
             if (number < 1 || number > 4)
                 throw new IsuException("CourseNumber must be in range [1..4]");
-            _number = number;
+            Number = number;
         }
 
-        public uint Number
-        {
-            get => _number;
-        }
+        public int Number { get; }
     }
 }

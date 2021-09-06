@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Isu.DataTypes;
 using Isu.Entities;
 using Isu.Tools;
@@ -7,88 +8,75 @@ namespace Isu.Services
 {
     public class IsuService : IIsuService
     {
-        private readonly Course[] _courses;
         private readonly uint _groupCapacity;
-        private readonly Dictionary<int, Student> _allStudents;
-        private readonly Dictionary<string, Group> _allGroups;
+        private readonly List<Student> _allStudents;
+        private readonly List<Group> _allGroups;
         private int _uniqueId;
 
         public IsuService(int starterId = 300000, uint groupCapacity = 20)
         {
             _uniqueId = starterId;
-            _courses = new Course[4];
             _groupCapacity = groupCapacity;
-            _allStudents = new Dictionary<int, Student>();
-            _allGroups = new Dictionary<string, Group>();
-            for (int i = 0; i < 4; ++i)
-            {
-                _courses[i] = new Course(i + 1);
-            }
+            _allStudents = new List<Student>();
+            _allGroups = new List<Group>();
         }
 
         public Group AddGroup(string name)
         {
             if (!Group.CheckGroupName(name))
-                throw new IsuException("Invalid group name!");
-            Course course = _courses[name[2] - '0' - 1];
+                throw new IsuException($"{name} is invalid group name!");
             var newGroup = new Group(name, _groupCapacity);
-            course.AddGroupToCourse(newGroup);
-            _allGroups[name] = newGroup;
+            _allGroups.Add(newGroup);
             return newGroup;
         }
 
         public Student AddStudent(Group group, string name)
         {
-            var newStudent = new Student(name, _uniqueId);
-            _uniqueId++;
+            var newStudent = new Student(name, _uniqueId++);
             newStudent.ChangeGroup(group);
-            _allStudents[newStudent.Id] = newStudent;
+            _allStudents.Add(newStudent);
             return newStudent;
         }
 
         public Student GetStudent(int id)
         {
-            if (_allStudents.ContainsKey(id))
-                return _allStudents[id];
+            foreach (Student student in _allStudents.Where(student => student.Id == id))
+            {
+                return student;
+            }
 
             throw new IsuException($"Student with id {id} doesn't exist");
         }
 
         public Student FindStudent(string name)
         {
-            foreach (KeyValuePair<int, Student> item in _allStudents)
-            {
-                if (item.Value.Name == name)
-                    return item.Value;
-            }
-
-            return null;
+            return _allStudents.FirstOrDefault(student => student.Name == name);
         }
 
         public List<Student> FindStudents(string groupName)
         {
-            if (_allGroups.ContainsKey(groupName))
-                return _allGroups[groupName].Students;
-
-            return null;
+            return (from @group in _allGroups where @group.GroupName == groupName select @group.Students).FirstOrDefault();
         }
 
         public List<Student> FindStudents(CourseNumber course)
         {
-            throw new System.NotImplementedException();
+            var studentsOnCourse = new List<Student>();
+            foreach (Group @group in _allGroups.Where(@group => @group.GroupName[2] - '0' == course.Number))
+            {
+                studentsOnCourse.AddRange(@group.Students);
+            }
+
+            return studentsOnCourse;
         }
 
         public Group FindGroup(string groupName)
         {
-            if (_allGroups.ContainsKey(groupName))
-                return _allGroups[groupName];
-
-            return null;
+            return _allGroups.FirstOrDefault(@group => @group.GroupName == groupName);
         }
 
         public List<Group> FindGroups(CourseNumber course)
         {
-            return _courses[course.Number - 1].Groups;
+            return _allGroups.Where(@group => @group.GroupName[2] - '0' == course.Number).ToList();
         }
 
         public void ChangeStudentGroup(Student student, Group newGroup)

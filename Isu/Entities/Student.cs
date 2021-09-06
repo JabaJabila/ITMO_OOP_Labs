@@ -4,44 +4,31 @@ namespace Isu.Entities
 {
     public class Student
     {
-        private readonly string _name;
-        private readonly int _id;
-        private Group _group;
-
         public Student(string name, int id)
         {
-            _name = name ?? throw new IsuException("Student must have name!");
-            _id = id;
-            _group = null;
+            Name = name ?? throw new IsuException("Student must have name!");
+            Id = id;
+            Group = null;
         }
 
-        public int Id
-        {
-            get => _id;
-        }
+        public int Id { get; }
 
-        public string Name
-        {
-            get => _name;
-        }
+        public string Name { get; }
 
-        public Group Group
-        {
-            get => _group;
-        }
+        public Group Group { get; private set; }
 
         public void ChangeGroup(Group newGroup)
         {
-            if (_group != null)
+            if (Group != null)
             {
-                _group.DeleteStudentFromGroup(this);
-                _group = null;
+                Group.DeleteStudentFromGroup(this);
+                Group = null;
             }
 
             if (newGroup != null)
             {
                 newGroup.AddStudentToGroup(this);
-                _group = newGroup;
+                Group = newGroup;
             }
         }
     }
