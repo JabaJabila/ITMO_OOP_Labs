@@ -8,12 +8,14 @@ namespace Isu.Services
 {
     public class IsuService : IIsuService
     {
+        private const int DefaultStarterId = 300000;
+        private const uint DefaultGroupCapacity = 20;
         private readonly uint _groupCapacity;
         private readonly List<Student> _allStudents;
         private readonly List<Group> _allGroups;
         private int _uniqueId;
 
-        public IsuService(int starterId = 300000, uint groupCapacity = 20)
+        public IsuService(int starterId = DefaultStarterId, uint groupCapacity = DefaultGroupCapacity)
         {
             _uniqueId = starterId;
             _groupCapacity = groupCapacity;
@@ -23,8 +25,6 @@ namespace Isu.Services
 
         public Group AddGroup(string name)
         {
-            if (!Group.CheckGroupName(name))
-                throw new IsuException($"{name} is invalid group name!");
             var newGroup = new Group(name, _groupCapacity);
             _allGroups.Add(newGroup);
             return newGroup;
@@ -55,28 +55,26 @@ namespace Isu.Services
 
         public List<Student> FindStudents(string groupName)
         {
-            return (from @group in _allGroups where @group.GroupName == groupName select @group.Students).FirstOrDefault();
+            return _allGroups.Where(group => group.GroupName == groupName)
+                             .Select(group => group.Students)
+                             .FirstOrDefault();
         }
 
         public List<Student> FindStudents(CourseNumber course)
         {
-            var studentsOnCourse = new List<Student>();
-            foreach (Group @group in _allGroups.Where(@group => @group.GroupName[2] - '0' == course.Number))
-            {
-                studentsOnCourse.AddRange(@group.Students);
-            }
-
-            return studentsOnCourse;
+            return _allGroups.Where(group => group.Course == course.Number)
+                             .SelectMany(group => group.Students)
+                             .ToList();
         }
 
         public Group FindGroup(string groupName)
         {
-            return _allGroups.FirstOrDefault(@group => @group.GroupName == groupName);
+            return _allGroups.FirstOrDefault(group => group.GroupName == groupName);
         }
 
         public List<Group> FindGroups(CourseNumber course)
         {
-            return _allGroups.Where(@group => @group.GroupName[2] - '0' == course.Number).ToList();
+            return _allGroups.Where(group => group.Course == course.Number).ToList();
         }
 
         public void ChangeStudentGroup(Student student, Group newGroup)
