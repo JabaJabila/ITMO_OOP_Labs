@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using Shops.Services;
-using Shops.PersonEntities;
-using Shops.ShopEntities;
+using Shops.Entities;
 using Shops.Tools;
 using NUnit.Framework;
 
@@ -47,163 +46,230 @@ namespace Shops.Tests
             shop1.AddProducts(consignmentList1);
             shop2.AddProducts(consignmentList2);
             shop3.AddProducts(consignmentList3);
-            
         }
 
-        [Test]
-        public void AddProductsToShop_ShopHasProductsToBuy()
+        [TestCase("Buckwheat 1kg", 10u, 100)]
+        [TestCase("CocaCola SugarFree 1l", 100u, 95)]
+        [TestCase("Lays Onion flavor", 5u, 70)]
+        public void AddProductsToShop_ShopHasProductsToBuy(string productName, uint count, decimal price)
         {
-            Shop shop = _manager.FindShop("Pyatyorochka");
-            Product buckwheat = _manager.FindProduct("Grechka 1kg");
-            Product bread = _manager.FindProduct("Hleb Borodinskiy");
+            Shop shop = _manager.CreateShop("ShopName", "ShopAddress");
+            Product product = _manager.RegisterProduct(productName);
             var consignmentList = new List<ProductConsignment>
             {
-                new ProductConsignment(buckwheat, 5, 95M),
-                new ProductConsignment(bread, 10, 45M),
+                new ProductConsignment(product, count, price),
             };
             shop.AddProducts(consignmentList);
-            Assert.AreEqual(bread, shop.FindProductConsignment(bread).Product);
-            Assert.AreEqual(buckwheat, shop.FindProductConsignment(buckwheat).Product);
+            Assert.AreEqual(product, shop.FindProductConsignment(product).Product);
+            Assert.AreEqual(count, shop.FindProductConsignment(product).Count);
+            Assert.AreEqual(price, shop.FindProductConsignment(product).Price);
         }
         
-        [Test]
-        public void SetPriceOnProduct_ProductChangedPrice()
+        [TestCase(10u, 100, 90)]
+        [TestCase(100u, 95, 105)]
+        [TestCase(5u, 70, 30)]
+        public void SetPriceOnProduct_ProductChangedPrice(uint count, decimal oldPrice, decimal newPrice)
         {
-            const decimal priceBefore = 100M;
-            const decimal priceAfter = 110M;
-            Shop shop = _manager.FindShop("Pyatyorochka");
-            Product buckwheat = _manager.FindProduct("Grechka 1kg");
+            Shop shop = _manager.CreateShop("ShopName", "ShopAddress");
+            Product product = _manager.RegisterProduct("ProductName");
             var consignmentList = new List<ProductConsignment>
             {
-                new ProductConsignment(buckwheat, 10, priceBefore),
+                new ProductConsignment(product, count, oldPrice),
             };
             shop.AddProducts(consignmentList);
-            shop.SetPrice(buckwheat, priceAfter);
-            
-            Assert.AreEqual(priceAfter, shop.FindProductConsignment(buckwheat).Price);
+            Assert.AreEqual(oldPrice, shop.FindProductConsignment(product).Price);
+            shop.SetPrice(product, newPrice);
+            Assert.AreEqual(newPrice, shop.FindProductConsignment(product).Price);
         }
         
-        [Test]
-        public void PersonBuysProducts_ProductsRemovesFromShop()
+        [TestCase(10u, 1u, 100)]
+        [TestCase(1u, 1u, 50)]
+        [TestCase(20u, 20u, 10)]
+        public void PersonBuysProducts_ProductsRemovesFromShop(uint countBefore, uint countToBuy, decimal price)
         {
-            const uint countBefore = 10;
-            const uint countToBuy = 2;
-            const uint countAfter = countBefore - countToBuy;
-            Shop shop = _manager.FindShop("Pyatyorochka");
-            Product buckwheat = _manager.FindProduct("Grechka 1kg");
+            uint countAfter = countBefore - countToBuy;
+            Shop shop = _manager.CreateShop("ShopName", "ShopAddress");
+            Product product = _manager.RegisterProduct("ProductName");
             var consignmentList = new List<ProductConsignment>
             {
-                new ProductConsignment(buckwheat, countBefore, 100M),
+                new ProductConsignment(product, countBefore, price),
             };
             shop.AddProducts(consignmentList);
-            var buyer = new Person("Vasya", 1000M);
-            shop.Buy(buyer, new List<BuyingRequest>{new BuyingRequest(buckwheat, countToBuy)});
+            var buyer = new Person("PersonName", price * countToBuy);
+            shop.Buy(buyer, new List<BuyingRequest>{new BuyingRequest(product, countToBuy)});
 
-            Assert.AreEqual(countAfter, shop.FindProductConsignment(buckwheat).Count);
+            Assert.AreEqual(countAfter, shop.FindProductConsignment(product).Count);
         }
         
-        [Test]
-        public void PersonBuysProducts_PersonSpendMoney()
+        [TestCase(100, 10, 10u)]
+        [TestCase(10000, 1, 95u)]
+        [TestCase(200, 45, 3u)]
+        public void PersonBuysProducts_PersonSpendMoney(decimal moneyBefore, decimal price, uint countToBuy)
         {
-            const decimal moneyBefore = 1000M;
-            const decimal price = 105M;
-            const decimal moneyAfter = moneyBefore - price;
-            Shop shop = _manager.FindShop("Pyatyorochka");
-            Product buckwheat = _manager.FindProduct("Grechka 1kg");
+            decimal moneyAfter = moneyBefore - price * countToBuy;
+            Shop shop = _manager.CreateShop("ShopName", "ShopAddress");
+            Product product = _manager.RegisterProduct("ProductName");
             var consignmentList = new List<ProductConsignment>
             {
-                new ProductConsignment(buckwheat, 10, price),
+                new ProductConsignment(product, countToBuy, price),
             };
             shop.AddProducts(consignmentList);
-            var buyer = new Person("Vasya", moneyBefore);
-            shop.Buy(buyer, new List<BuyingRequest>{new BuyingRequest(buckwheat, 1)});
+            var buyer = new Person("PersonName", moneyBefore);
+            shop.Buy(buyer, new List<BuyingRequest>{new BuyingRequest(product, countToBuy)});
 
             Assert.AreEqual(moneyAfter, buyer.Balance);
         }
         
-        [Test]
-        public void PersonBuysTooMuchProducts_ThrowException()
+        [TestCase(10u, 11u, 10)]
+        [TestCase(1u, 2u, 50)]
+        [TestCase(20u, 200u, 30)]
+        public void PersonBuysTooMuchProducts_ThrowException(uint countInShop, uint countToBuy, decimal price)
         {
-            const uint countBefore = 10;
-            const uint countToBuy = 11;
-            Shop shop = _manager.FindShop("Pyatyorochka");
-            Product buckwheat = _manager.FindProduct("Grechka 1kg");
+            Shop shop = _manager.CreateShop("ShopName", "ShopAddress");
+            Product product = _manager.RegisterProduct("ProductName");
             var consignmentList = new List<ProductConsignment>
             {
-                new ProductConsignment(buckwheat, countBefore, 100M),
+                new ProductConsignment(product, countInShop, price),
             };
             shop.AddProducts(consignmentList);
-            var buyer = new Person("Vasya", 1200M);
+            var buyer = new Person("PersonName", price * countToBuy);
             Assert.Throws<ShopException>(() =>
             {
-                shop.Buy(buyer, new List<BuyingRequest>{new BuyingRequest(buckwheat, countToBuy)});
+                shop.Buy(buyer, new List<BuyingRequest>{new BuyingRequest(product, countToBuy)});
             });
         }
         
-        [Test]
-        public void PersonBuysNonExistentProduct_ThrowException()
+        [TestCase("Buckwheat", "Rice", 5u, 100)]
+        [TestCase("RedBull", "MonsterBlack", 1u, 120)]
+        [TestCase("Bread", "Buns", 3u, 50)]
+        public void PersonBuysNonExistentProduct_ThrowException(
+            string productNameToBuy, 
+            string productNameInShop, 
+            uint count, 
+            decimal price)
         {
-            Shop shop = _manager.FindShop("Pyatyorochka");
-            Product buckwheat = _manager.FindProduct("Grechka 1kg");
-            Product monster = _manager.FindProduct("Monster Black energy drink");
+            Shop shop = _manager.CreateShop("ShopName", "ShopAddress");
+            Product productInShop = _manager.RegisterProduct(productNameInShop);
+            Product productToBuy = _manager.RegisterProduct(productNameToBuy);
             var consignmentList = new List<ProductConsignment>
             {
-                new ProductConsignment(buckwheat, 10, 100M),
+                new ProductConsignment(productInShop, count, price),
             };
             shop.AddProducts(consignmentList);
-            var buyer = new Person("Vasya", 1200M);
+            var buyer = new Person("PersonName", price * count);
+            
             Assert.Throws<ShopException>(() =>
             {
-                shop.Buy(buyer, new List<BuyingRequest>{new BuyingRequest(monster, 1)});
+                shop.Buy(buyer, new List<BuyingRequest>{new BuyingRequest(productToBuy, count)});
             });
         }
         
-        [Test]
-        public void PersonDoesNotHaveEnoughMoneyToBuyProducts_ThrowException()
+        [TestCase(100, 105, 1u)]
+        [TestCase(1000, 100, 11u)]
+        [TestCase(80, 9, 9u)]
+        public void PersonDoesNotHaveEnoughMoneyToBuyProducts_ThrowException(decimal personMoney, decimal price, uint count)
         {
-            const decimal price = 105M;
-            const uint productCount = 10;
-            const decimal money = price * (productCount - 1);
-            Shop shop = _manager.FindShop("Pyatyorochka");
-            Product buckwheat = _manager.FindProduct("Grechka 1kg");
+            Shop shop = _manager.CreateShop("ShopName", "ShopAddress");
+            Product product = _manager.RegisterProduct("ProductName");
             var consignmentList = new List<ProductConsignment>
             {
-                new ProductConsignment(buckwheat, productCount, price),
+                new ProductConsignment(product, count, price),
             };
             shop.AddProducts(consignmentList);
-            var buyer = new Person("Vasya", money);
+            var buyer = new Person("PersonName", personMoney);
 
             Assert.Throws<PersonException>(() =>
             {
-                shop.Buy(buyer, new List<BuyingRequest>{new BuyingRequest(buckwheat, productCount)});
+                shop.Buy(buyer, new List<BuyingRequest>{new BuyingRequest(product, count)});
             });
         }
         
-        [Test]
-        public void SearchForMinimalPrice_SuccessfullyFound()
+        [TestCase(10, 20, 5u)]
+        [TestCase(100, 1001, 1u)]
+        [TestCase(15, 150, 3u)]
+        public void SearchForMinimalPrice_SuccessfullyFound(
+            decimal priceInCheapShop,
+            decimal priceInExpensiveShop,
+            uint countToBuy)
         {
-            Product buckwheat = _manager.FindProduct("Grechka 1kg");
-            var shoppingList = new List<BuyingRequest> {new BuyingRequest(buckwheat, 1)};
-            
-            Assert.AreEqual(_manager.FindMostProfitableShop(shoppingList), _manager.FindShop("Lenta"));
+            Product product = _manager.RegisterProduct("ProductName");
+            Shop cheapShop = _manager.CreateShop("CheapShop", "ShopAddress");
+            Shop expensiveShop = _manager.CreateShop("ExpensiveShop", "ShopAddress");
+            var productConsignment1 = new List<ProductConsignment>
+            {
+                new ProductConsignment(product, countToBuy, priceInCheapShop)
+            };
+            var productConsignment2 = new List<ProductConsignment>
+            {
+                new ProductConsignment(product, countToBuy, priceInExpensiveShop)
+            };
+            var shoppingList = new List<BuyingRequest>()
+            {
+                new BuyingRequest(product, countToBuy)
+            };
+            cheapShop.AddProducts(productConsignment1);
+            expensiveShop.AddProducts(productConsignment2);
+            Assert.AreEqual(_manager.FindCheapestShop(shoppingList), cheapShop);
         }
         
-        [Test]
-        public void SearchForMinimalPriceButNoEnoughProducts_NotFoundReturnsNull()
+        [TestCase(10, 20, 5u, 3u)]
+        [TestCase(100, 1001, 2u, 1u)]
+        [TestCase(15, 150, 30u, 3u)]
+        public void SearchForMinimalPriceButNotEnoughProducts_NotFoundReturnsNull(
+            decimal priceInCheapShop,
+            decimal priceInExpensiveShop,
+            uint countToBuy,
+            uint countInShop)
         {
-            Product monster = _manager.FindProduct("Monster Black energy drink");
-            var shoppingList = new List<BuyingRequest> {new BuyingRequest(monster, 30)};
-            
-            Assert.Null(_manager.FindMostProfitableShop(shoppingList));
+            Product product = _manager.RegisterProduct("ProductName");
+            Shop cheapShop = _manager.CreateShop("CheapShop", "ShopAddress");
+            Shop expensiveShop = _manager.CreateShop("ExpensiveShop", "ShopAddress");
+            var productConsignment1 = new List<ProductConsignment>
+            {
+                new ProductConsignment(product, countInShop, priceInCheapShop)
+            };
+            var productConsignment2 = new List<ProductConsignment>
+            {
+                new ProductConsignment(product, countInShop, priceInExpensiveShop)
+            };
+            var shoppingList = new List<BuyingRequest>()
+            {
+                new BuyingRequest(product, countToBuy)
+            };
+            cheapShop.AddProducts(productConsignment1);
+            expensiveShop.AddProducts(productConsignment2);
+            Assert.Null(_manager.FindCheapestShop(shoppingList));
         }
         
-        [Test]
-        public void SearchForMinimalPriceForNonExistingProduct_NotFoundReturnsNull()
+        [TestCase(10, 20, 5u, "CocaCola", "Fanta")]
+        [TestCase(100, 1001, 2u, "Onion", "Garlic")]
+        [TestCase(15, 150, 30u, "Green Tea", "Black Tea")]
+        public void SearchForMinimalPriceForNonExistingProduct_NotFoundReturnsNull(
+            decimal priceInCheapShop,
+            decimal priceInExpensiveShop,
+            uint countToBuy,
+            string nameOfExistingProduct,
+            string nameOfNonExistingProduct)
         {
-            Product juice = _manager.RegisterProduct("Orange juice Dobriy");
-            var shoppingList = new List<BuyingRequest> {new BuyingRequest(juice, 1)};
-            
-            Assert.Null(_manager.FindMostProfitableShop(shoppingList));
+            Product exisingProduct = _manager.RegisterProduct(nameOfExistingProduct);
+            Product nonExistingProduct = _manager.RegisterProduct(nameOfNonExistingProduct);
+            Shop cheapShop = _manager.CreateShop("CheapShop", "ShopAddress");
+            Shop expensiveShop = _manager.CreateShop("ExpensiveShop", "ShopAddress");
+            var productConsignment1 = new List<ProductConsignment>
+            {
+                new ProductConsignment(exisingProduct, countToBuy, priceInCheapShop)
+            };
+            var productConsignment2 = new List<ProductConsignment>
+            {
+                new ProductConsignment(exisingProduct, countToBuy, priceInExpensiveShop)
+            };
+            var shoppingList = new List<BuyingRequest>()
+            {
+                new BuyingRequest(nonExistingProduct, countToBuy)
+            };
+            cheapShop.AddProducts(productConsignment1);
+            expensiveShop.AddProducts(productConsignment2);
+            Assert.Null(_manager.FindCheapestShop(shoppingList));
         }
     }
 }

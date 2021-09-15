@@ -1,6 +1,6 @@
 ﻿using Shops.Tools;
 
-namespace Shops.ShopEntities
+namespace Shops.Entities
 {
     public class Product
     {

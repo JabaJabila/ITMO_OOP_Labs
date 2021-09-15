@@ -1,19 +1,16 @@
 ﻿using Shops.Tools;
 
-namespace Shops.ShopEntities
+namespace Shops.Entities
 {
-    public class ProductConsignment
+    public class ProductConsignment : BuyingRequest
     {
         private decimal _price;
         public ProductConsignment(Product product, uint count, decimal price)
+            : base(product, count)
         {
-            Product = product ?? throw new ProductException("Product in consignment can't be null");
-            Count = count;
             Price = price;
         }
 
-        public Product Product { get; }
-        public uint Count { get; internal set; }
         public decimal Price
         {
             get => _price;

@@ -1,9 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Shops.PersonEntities;
 using Shops.Tools;
 
-namespace Shops.ShopEntities
+namespace Shops.Entities
 {
     public class Shop
     {
@@ -73,6 +72,19 @@ namespace Shops.ShopEntities
             person.PayBill(totalPrice);
             for (int positionNumber = 0; positionNumber < shoppingList.Count; ++positionNumber)
                 productsToBuy[positionNumber].Count -= shoppingList[positionNumber].Count;
+        }
+
+        public override int GetHashCode()
+        {
+            return Id.GetHashCode();
+        }
+
+        public override bool Equals(object obj)
+        {
+            var shop = obj as Shop;
+            if (shop == null)
+                return false;
+            return shop.Id == Id && shop.Name == Name && shop.Address == Address;
         }
     }
 }

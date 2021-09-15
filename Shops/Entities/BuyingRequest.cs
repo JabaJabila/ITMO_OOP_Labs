@@ -1,7 +1,6 @@
-﻿using Shops.ShopEntities;
-using Shops.Tools;
+﻿using Shops.Tools;
 
-namespace Shops.PersonEntities
+namespace Shops.Entities
 {
     public class BuyingRequest
     {
@@ -9,11 +8,11 @@ namespace Shops.PersonEntities
         {
             Product = product ?? throw new ProductException("Wishing product can't be null!");
             if (count == 0)
-                throw new ProductException("You can't wish to buy 0 products!");
+                throw new ProductException("You can't wish to get 0 products!");
             Count = count;
         }
 
         public Product Product { get; }
-        public uint Count { get; }
+        public uint Count { get; internal set; }
     }
 }

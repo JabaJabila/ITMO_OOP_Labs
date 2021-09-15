@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Shops.PersonEntities;
-using Shops.ShopEntities;
+using Shops.Entities;
 using Shops.Tools;
 
 namespace Shops.Services
@@ -61,10 +60,10 @@ namespace Shops.Services
         {
             foreach (Product product in _allProducts.Where(product => product.Id == id))
                 return product;
-            throw new ShopException($"Product with id={id} doesn't exists!");
+            throw new ProductException($"Product with id={id} doesn't exists!");
         }
 
-        public Shop FindMostProfitableShop(List<BuyingRequest> shoppingList)
+        public Shop FindCheapestShop(List<BuyingRequest> shoppingList)
         {
             decimal minimalPrice = 0M;
             Shop profitableShop = null;
