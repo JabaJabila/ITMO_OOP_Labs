@@ -11,12 +11,12 @@ namespace Shops.UI
     public class ConsoleUI
     {
         private readonly ShopManager _manager;
-        private readonly Menu _menus;
+        private readonly Menu _menu;
 
         public ConsoleUI(ShopManager shopManager)
         {
-            _manager = shopManager ?? throw new UiException("Shop Manager can't be null!");
-            _menus = new Menu(this);
+            _manager = shopManager ?? throw new UIException("Shop Manager can't be null!");
+            _menu = new Menu(this);
         }
 
         public void Run()
@@ -24,18 +24,16 @@ namespace Shops.UI
             bool inMainMenu = true;
             while (inMainMenu)
             {
-                inMainMenu = _menus.MainMenuDialogue(_manager);
+                inMainMenu = _menu.MainMenuDialogue(_manager);
             }
         }
 
         internal void CreatingShopDialogue()
         {
             string name = AnsiConsole.Prompt(
-                new TextPrompt<string>("Input [green]name[/] of the shop...")
-                    .DefaultValue("NewShop"));
+                new TextPrompt<string>("Input [green]name[/] of the shop..."));
             string address = AnsiConsole.Prompt(
-                new TextPrompt<string>("Input [green]address[/] of the shop...")
-                    .DefaultValue("SomeAddress"));
+                new TextPrompt<string>("Input [green]address[/] of the shop..."));
             try
             {
                 _manager.CreateShop(name, address);
@@ -49,8 +47,7 @@ namespace Shops.UI
         internal void RegisterProduct()
         {
             string name = AnsiConsole.Prompt(
-                new TextPrompt<string>("Input [green]name[/] of the product...")
-                    .DefaultValue("NewProduct"));
+                new TextPrompt<string>("Input [green]name[/] of the product..."));
             try
             {
                 _manager.RegisterProduct(name);
@@ -71,7 +68,7 @@ namespace Shops.UI
                 bool inShopMenu = true;
                 while (inShopMenu)
                 {
-                    inShopMenu = _menus.ShopMenuDialogue(shop);
+                    inShopMenu = _menu.ShopMenuDialogue(shop);
                 }
             }
             catch (Exception exception)
@@ -166,7 +163,7 @@ namespace Shops.UI
             bool inShopMenu = true;
             while (inShopMenu)
             {
-                inShopMenu = _menus.ShopMenuDialogue(shop);
+                inShopMenu = _menu.ShopMenuDialogue(shop);
             }
         }
 
@@ -193,11 +190,9 @@ namespace Shops.UI
         private Person AddingPersonDialogue()
         {
             string name = AnsiConsole.Prompt(
-                new TextPrompt<string>("Input [green]name[/] of the person...")
-                    .DefaultValue("SomeName"));
+                new TextPrompt<string>("Input [green]name[/] of the person..."));
             decimal balance = AnsiConsole.Prompt(
-                new TextPrompt<decimal>("Input [green]balance[/] of the person...")
-                    .DefaultValue(0M));
+                new TextPrompt<decimal>("Input [green]balance[/] of the person..."));
             try
             {
                 var person = new Person(name, balance);
@@ -216,7 +211,6 @@ namespace Shops.UI
             string shopInfo = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
                     .Title("Choose [green]products[/]:")
-                    .PageSize(10)
                     .MoreChoicesText("[grey](Move up and down to reveal more products)[/]")
                     .AddChoices(options));
             return Convert.ToInt32(shopInfo.Split(':')[0]);
@@ -227,7 +221,6 @@ namespace Shops.UI
             List<string> productsInfo = AnsiConsole.Prompt(
                 new MultiSelectionPrompt<string>()
                     .Title("Choose [green]products[/]:")
-                    .PageSize(10)
                     .MoreChoicesText("[grey](Move up and down to reveal more products)[/]")
                     .InstructionsText(
                         "[grey](Press [blue]<space>[/] to toggle a product, "

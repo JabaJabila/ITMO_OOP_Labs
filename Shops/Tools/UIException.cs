@@ -2,13 +2,13 @@
 
 namespace Shops.Tools
 {
-    public class UiException : Exception
+    public class UIException : Exception
     {
-        public UiException()
+        public UIException()
         {
         }
 
-        public UiException(string message)
+        public UIException(string message)
             : base(message)
         {
         }

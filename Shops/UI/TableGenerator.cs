@@ -6,9 +6,9 @@ using Spectre.Console;
 
 namespace Shops.UI
 {
-    internal static class TableGenerator
+    public static class TableGenerator
     {
-        internal static void Generate(IEnumerable<Shop> shopList)
+        public static void Generate(IEnumerable<Shop> shopList)
         {
             var table = new Table();
             table.AddColumn("ID");
@@ -19,7 +19,7 @@ namespace Shops.UI
             AnsiConsole.Render(table);
         }
 
-        internal static void Generate(IEnumerable<Product> productList)
+        public static void Generate(IEnumerable<Product> productList)
         {
             var table = new Table();
             table.AddColumn("ID");
@@ -29,7 +29,7 @@ namespace Shops.UI
             AnsiConsole.Render(table);
         }
 
-        internal static void Generate(IEnumerable<ProductConsignment> assortment)
+        public static void Generate(IEnumerable<ProductConsignment> assortment)
         {
             var table = new Table();
             table.AddColumn("ID");
