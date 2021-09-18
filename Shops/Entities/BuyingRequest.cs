@@ -1,8 +1,9 @@
-﻿using Shops.Tools;
+﻿using System;
+using Shops.Tools;
 
 namespace Shops.Entities
 {
-    public class BuyingRequest
+    public class BuyingRequest : IEquatable<BuyingRequest>
     {
         public BuyingRequest(Product product, uint count)
         {
@@ -14,5 +15,22 @@ namespace Shops.Entities
 
         public Product Product { get; }
         public uint Count { get; internal set; }
+
+        public bool Equals(BuyingRequest other)
+        {
+            return other != null
+                   && Equals(Product, other.Product)
+                   && Count == other.Count;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is BuyingRequest buyingRequest && Equals(buyingRequest);
+        }
+
+        public override int GetHashCode()
+        {
+            return Product.Id;
+        }
     }
 }

@@ -1,4 +1,5 @@
-﻿using Shops.Services;
+﻿using Shops.Models;
+using Shops.Services;
 using Shops.UI;
 
 namespace Shops
@@ -7,8 +8,8 @@ namespace Shops
     {
         private static void Main()
         {
-            var consoleUi = new ConsoleUI(new ShopManager());
-            consoleUi.Run();
+            var application = new ShopLogicViewModel(new ConsoleUI(), new ShopManager());
+            application.Run();
         }
     }
 }

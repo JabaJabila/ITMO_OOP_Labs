@@ -1,222 +1,74 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Shops.Entities;
-using Shops.Services;
-using Shops.Tools;
 using Spectre.Console;
 
 namespace Shops.UI
 {
-    public class ConsoleUI
+    public class ConsoleUI : IConsoleUI
     {
-        private readonly ShopManager _manager;
-        private readonly Menu _menu;
-
-        public ConsoleUI(ShopManager shopManager)
+        public string AskForName(string target)
         {
-            _manager = shopManager ?? throw new UIException("Shop Manager can't be null!");
-            _menu = new Menu(this);
+            return AnsiConsole.Ask<string>($"What's [green]name[/] of the {target}?");
         }
 
-        public void Run()
+        public string AskShopAddress()
         {
-            bool inMainMenu = true;
-            while (inMainMenu)
-            {
-                inMainMenu = _menu.MainMenuDialogue(_manager);
-            }
+            return AnsiConsole.Ask<string>("What's [green]address[/] of the shop?");
         }
 
-        internal void CreatingShopDialogue()
+        public void ShowException(string message)
         {
-            string name = AnsiConsole.Prompt(
-                new TextPrompt<string>("Input [green]name[/] of the shop..."));
-            string address = AnsiConsole.Prompt(
-                new TextPrompt<string>("Input [green]address[/] of the shop..."));
-            try
-            {
-                _manager.CreateShop(name, address);
-            }
-            catch (ShopException exception)
-            {
-                AnsiConsole.Render(new Rule($"[bold red]{exception.Message}[/]"));
-            }
+            AnsiConsole.Render(new Rule($"[bold red]{message}[/]"));
         }
 
-        internal void RegisterProduct()
+        public decimal AskForPrice(string name)
         {
-            string name = AnsiConsole.Prompt(
-                new TextPrompt<string>("Input [green]name[/] of the product..."));
-            try
-            {
-                _manager.RegisterProduct(name);
-            }
-            catch (ProductException exception)
-            {
-                AnsiConsole.Render(new Rule($"[bold red]{exception.Message}[/]"));
-            }
+            return AnsiConsole.Ask<decimal>($"What's [green]price[/] of [yellow]{name}[/]?");
         }
 
-        internal void ChoosingShopDialogue()
+        public uint AskForProductCount(string name)
         {
-            int shopId = ChoosingShopDialogue(
-                _manager.AllShops.Select(shop => Convert.ToString(shop.Id) + ": " + shop.Name).ToList());
-            try
-            {
-                Shop shop = _manager.GetShop(shopId);
-                bool inShopMenu = true;
-                while (inShopMenu)
-                {
-                    inShopMenu = _menu.ShopMenuDialogue(shop);
-                }
-            }
-            catch (Exception exception)
-            {
-                AnsiConsole.Render(new Rule($"[bold red]{exception.Message}[/]"));
-            }
+            return AnsiConsole.Ask<uint>($"[green]How many[/] of [yellow]{name}[/] you want to add?");
         }
 
-        internal void SettingPricesDialogue(Shop shop)
+        public void ShowSuccessfulTransaction()
         {
-            List<int> productIds = MultiChoosingProductsDialogue(
-                shop.Assortment.Select(
-                consignment => Convert.ToString(
-                    consignment.Product.Id) + ": " + consignment.Product.Name).ToList());
-            foreach (int id in productIds)
-            {
-                try
-                {
-                    Product product = _manager.GetProduct(id);
-                    decimal price = AnsiConsole.Ask<decimal>(
-                        $"What's [green]new price[/] of [yellow]{product.Name}[/]?");
-                    shop.SetPrice(product, price);
-                }
-                catch (Exception exception)
-                {
-                    AnsiConsole.Render(new Rule($"[bold red]{exception.Message}[/]"));
-                }
-            }
+            AnsiConsole.Render(new Rule("[bold green]Successfully bought[/]"));
         }
 
-        internal void AddingProductsToShopDialogue(Shop shop)
+        public void ShowWarning(string message)
         {
-            var productConsignment = new List<ProductConsignment>();
-            List<int> productIds = MultiChoosingProductsDialogue(
-                _manager.AllProducts.Select(
-                    product => Convert.ToString(product.Id) + ": " + product.Name).ToList());
-            foreach (Product product in productIds.Select(id => _manager.GetProduct(id)))
-            {
-                try
-                {
-                    uint productsCount = AnsiConsole.Ask<uint>(
-                        $"[green]How many[/] of [yellow]{product.Name}[/] you want to add?");
-                    decimal price = AnsiConsole.Ask<decimal>(
-                        $"What's [green]price[/] of [yellow]{product.Name}[/]?");
-                    productConsignment.Add(new ProductConsignment(product, productsCount, price));
-                }
-                catch (Exception exception)
-                {
-                    AnsiConsole.Render(new Rule($"[bold red]{exception.Message}[/]"));
-                }
-            }
-
-            shop.AddProducts(productConsignment);
+            AnsiConsole.Render(new Rule($"[bold yellow]{message}[/]"));
         }
 
-        internal void BuyingDialogue(Shop shop)
+        public void ShowSuccessfullyFoundShop(int id, string name, string address)
         {
-            List<BuyingRequest> shoppingList = MakeShoppingList(
-                MultiChoosingProductsDialogue(
-                _manager.AllProducts.Select(
-                    product => Convert.ToString(product.Id) + ": " + product.Name).ToList()));
-
-            Person person = AddingPersonDialogue();
-            if (person == null || shoppingList.Count == 0)
-                return;
-            try
-            {
-                shop.Buy(person, shoppingList);
-                AnsiConsole.Render(new Rule("[bold green]Successfully bought[/]"));
-            }
-            catch (Exception exception)
-            {
-                AnsiConsole.Render(new Rule($"[bold red]{exception.Message}[/]"));
-            }
-        }
-
-        internal void FindingCheapestShopDialogue()
-        {
-            List<BuyingRequest> shoppingList = MakeShoppingList(
-                MultiChoosingProductsDialogue(
-                _manager.AllProducts.Select(
-                    product => Convert.ToString(product.Id) + ": " + product.Name).ToList()));
-            Shop shop = _manager.FindCheapestShop(shoppingList);
-            if (shop == null)
-            {
-                AnsiConsole.Render(new Rule("[bold yellow]Cheapest shop not found[/]"));
-                return;
-            }
-
             AnsiConsole.Render(new Rule($"[green]Cheapest shop found | ID: " +
-                                        $"{shop.Id} | Name: {shop.Name} | Address: {shop.Address}[/]"));
-            bool inShopMenu = true;
-            while (inShopMenu)
-            {
-                inShopMenu = _menu.ShopMenuDialogue(shop);
-            }
+                                        $"{id} | Name: {name} | Address: {address}[/]"));
         }
 
-        private List<BuyingRequest> MakeShoppingList(List<int> productIds)
+        public string AskPersonName()
         {
-            var shoppingList = new List<BuyingRequest>();
-            foreach (Product product in productIds.Select(id => _manager.GetProduct(id)))
-            {
-                try
-                {
-                    uint productsCount = AnsiConsole.Ask<uint>(
-                        $"[green]How many[/] of [yellow]{product.Name}[/] you want to add?");
-                    shoppingList.Add(new BuyingRequest(product, productsCount));
-                }
-                catch (Exception exception)
-                {
-                    AnsiConsole.Render(new Rule($"[bold red]{exception.Message}[/]"));
-                }
-            }
-
-            return shoppingList;
+            return AnsiConsole.Ask<string>("What's [green]name[/] of the person?");
         }
 
-        private Person AddingPersonDialogue()
+        public decimal AskPersonBalance()
         {
-            string name = AnsiConsole.Prompt(
-                new TextPrompt<string>("Input [green]name[/] of the person..."));
-            decimal balance = AnsiConsole.Prompt(
-                new TextPrompt<decimal>("Input [green]balance[/] of the person..."));
-            try
-            {
-                var person = new Person(name, balance);
-                return person;
-            }
-            catch (PersonException exception)
-            {
-                AnsiConsole.Render(new Rule($"[bold red]{exception.Message}[/]"));
-            }
-
-            return null;
+            return AnsiConsole.Ask<decimal>("What's [green]balance[/] of the person?");
         }
 
-        private int ChoosingShopDialogue(List<string> options)
+        public int SingleSelection(string target, params string[] options)
         {
             string shopInfo = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
-                    .Title("Choose [green]products[/]:")
+                    .Title($"Choose [green]{target}[/]:")
                     .MoreChoicesText("[grey](Move up and down to reveal more products)[/]")
                     .AddChoices(options));
             return Convert.ToInt32(shopInfo.Split(':')[0]);
         }
 
-        private List<int> MultiChoosingProductsDialogue(List<string> options)
+        public List<int> MultiSelectionProducts(params string[] options)
         {
             List<string> productsInfo = AnsiConsole.Prompt(
                 new MultiSelectionPrompt<string>()
@@ -227,6 +79,36 @@ namespace Shops.UI
                         + "[green]<enter>[/] to accept)[/]")
                     .AddChoices(options));
             return productsInfo.Select(product => Convert.ToInt32(product.Split(':')[0])).ToList();
+        }
+
+        public bool ExitConfirmation()
+        {
+            return AnsiConsole.Confirm("[bold]Are you sure you want to [red]exit?[/][/]\n");
+        }
+
+        public void GenerateTable(char separator, params string[] rows)
+        {
+            if (rows.Length == 0)
+                throw new UIException("Table must have at least header!");
+
+            var table = new Table();
+            string[] header = rows[0].Split(separator);
+            int columnCount = header.Length;
+
+            foreach (string head in header)
+                table.AddColumn(head);
+
+            foreach (string row in rows[1..])
+            {
+                string[] elements = row.Split(separator);
+
+                if (elements.Length != columnCount)
+                    throw new UIException($"Wrong table format (columns: {columnCount}; rows: {elements.Length})!");
+
+                table.AddRow(elements);
+            }
+
+            AnsiConsole.Render(table);
         }
     }
 }

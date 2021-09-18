@@ -1,16 +1,18 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Shops.Tools;
 
 namespace Shops.Entities
 {
-    public class Shop
+    public class Shop : IEquatable<Shop>
     {
+        private static int _shopUniqueId = 1;
         private readonly List<ProductConsignment> _productsInStock;
 
-        internal Shop(int id, string name, string address)
+        public Shop(string name, string address)
         {
-            Id = id;
+            Id = _shopUniqueId++;
             Name = name ?? throw new ShopException("Shop must has it's own name");
             Address = address ?? throw new ShopException("Shop must has it's own address");
             _productsInStock = new List<ProductConsignment>();
@@ -19,15 +21,18 @@ namespace Shops.Entities
         public int Id { get; }
         public string Name { get; }
         public string Address { get; }
-        public IReadOnlyList<ProductConsignment> Assortment => _productsInStock;
+        public IReadOnlyCollection<ProductConsignment> Assortment => _productsInStock;
 
-        public void AddProducts(List<ProductConsignment> productsToAdd)
+        public void AddNewProducts(List<ProductConsignment> productsToAdd, bool restockIfExists = true)
         {
             foreach (ProductConsignment productConsignment in productsToAdd)
             {
                 ProductConsignment existingProduct = FindProductConsignment(productConsignment.Product);
                 if (existingProduct == null)
                 {
+                    if (!restockIfExists)
+                        throw new ShopException("Product already exists in shop and restockIfExists = false!");
+
                     _productsInStock.Add(productConsignment);
                     continue;
                 }
@@ -41,15 +46,32 @@ namespace Shops.Entities
             return _productsInStock.FirstOrDefault(productConsignment => productConsignment.Product.Equals(product));
         }
 
+        public uint CountOfProducts(Product product)
+        {
+            ProductConsignment consignment = FindProductConsignment(product);
+            return consignment?.Count ?? 0u;
+        }
+
+        public decimal? PriceOnProducts(BuyingRequest request)
+        {
+            uint count = CountOfProducts(request.Product);
+            if (count == 0)
+                return null;
+            return FindProductConsignment(request.Product).Price * count;
+        }
+
         public void SetPrice(Product product, decimal price)
         {
+            if (price <= 0)
+                throw new ShopException("You can't set price <= 0!");
             ProductConsignment productConsignment = FindProductConsignment(product);
             if (productConsignment == null)
                 throw new ShopException($"Product {product.Name} can't be found in shop {Name}");
+
             productConsignment.Price = price;
         }
 
-        public void Buy(Person person, List<BuyingRequest> shoppingList)
+        public void Buy(Person person, params BuyingRequest[] shoppingList)
         {
             decimal totalPrice = 0M;
             var productsToBuy = new List<ProductConsignment>();
@@ -70,21 +92,28 @@ namespace Shops.Entities
             }
 
             person.PayBill(totalPrice);
-            for (int positionNumber = 0; positionNumber < shoppingList.Count; ++positionNumber)
+            for (int positionNumber = 0; positionNumber < shoppingList.Length; positionNumber++)
                 productsToBuy[positionNumber].Count -= shoppingList[positionNumber].Count;
         }
 
         public override int GetHashCode()
         {
-            return Id.GetHashCode();
+            return HashCode.Combine(_productsInStock, Id, Name, Address);
         }
 
         public override bool Equals(object obj)
         {
-            var shop = obj as Shop;
-            if (shop == null)
-                return false;
-            return shop.Id == Id && shop.Name == Name && shop.Address == Address;
+            return obj is Shop shop && Equals(shop);
+        }
+
+        public bool Equals(Shop other)
+        {
+            return other != null
+                   && _productsInStock.All(other._productsInStock.Contains)
+                   && _productsInStock.Count == other._productsInStock.Count
+                   && Id == other.Id
+                   && Name == other.Name
+                   && Address == other.Address;
         }
     }
 }

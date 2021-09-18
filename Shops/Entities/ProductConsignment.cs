@@ -1,8 +1,9 @@
-﻿using Shops.Tools;
+﻿using System;
+using Shops.Tools;
 
 namespace Shops.Entities
 {
-    public class ProductConsignment : BuyingRequest
+    public class ProductConsignment : BuyingRequest, IEquatable<ProductConsignment>
     {
         private decimal _price;
         public ProductConsignment(Product product, uint count, decimal price)
@@ -20,6 +21,23 @@ namespace Shops.Entities
                     throw new ProductException("Product price must be > 0");
                 _price = value;
             }
+        }
+
+        public bool Equals(ProductConsignment other)
+        {
+            return other != null
+                   && base.Equals(other)
+                   && _price == other._price;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is ProductConsignment productConsignment && Equals(productConsignment);
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
         }
     }
 }

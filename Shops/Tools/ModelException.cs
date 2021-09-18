@@ -2,13 +2,13 @@
 
 namespace Shops.Tools
 {
-    public class UIException : Exception
+    public class ModelException : Exception
     {
-        public UIException()
+        public ModelException()
         {
         }
 
-        public UIException(string message)
+        public ModelException(string message)
             : base(message)
         {
         }

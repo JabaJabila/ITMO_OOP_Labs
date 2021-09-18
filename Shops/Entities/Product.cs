@@ -1,12 +1,14 @@
-﻿using Shops.Tools;
+﻿using System;
+using Shops.Tools;
 
 namespace Shops.Entities
 {
-    public class Product
+    public class Product : IEquatable<Product>
     {
-        internal Product(int id, string name)
+        private static int _productUniqueId = 1;
+        public Product(string name)
         {
-            Id = id;
+            Id = _productUniqueId++;
             Name = name ?? throw new ProductException("Product must has it's own name");
         }
 
@@ -15,15 +17,19 @@ namespace Shops.Entities
 
         public override int GetHashCode()
         {
-            return Id.GetHashCode();
+            return HashCode.Combine(Id, Name);
         }
 
         public override bool Equals(object obj)
         {
-            var product = obj as Product;
-            if (product == null)
-                return false;
-            return product.Id == Id && product.Name == Name;
+            return obj is Product product && Equals(product);
+        }
+
+        public bool Equals(Product other)
+        {
+            return other != null
+                   && Id == other.Id
+                   && Name == other.Name;
         }
     }
 }
