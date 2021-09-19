@@ -5,321 +5,145 @@ using System.Linq;
 using Shops.Entities;
 using Shops.Services;
 using Shops.Tools;
-using Shops.UI;
 
 namespace Shops.Models
 {
     public class ShopLogicViewModel
     {
-        private const char DefaultTableSeparator = '|';
-        private static readonly string[] MainMenuCommands =
-        {
-            "1: Create shop",
-            "2: Register product",
-            "3: View all shops",
-            "4: View all products",
-            "5: Choose shop",
-            "6: Find cheapest shop",
-            "7: Exit",
-        };
-
-        private static readonly string[] ShopMenuCommands =
-        {
-            "1: Add products",
-            "2: Set prices",
-            "3: Buy",
-            "4: View assortment",
-            "5: Back to main menu",
-        };
-
-        private readonly char _tableSeparator;
-        private readonly IConsoleUI _ui;
         private readonly ShopManager _manager;
 
-        public ShopLogicViewModel(IConsoleUI ui, ShopManager manager, char tableSeparator = DefaultTableSeparator)
+        public ShopLogicViewModel(ShopManager manager)
         {
-            _ui = ui ?? throw new ModelException("UI can't be null!");
             _manager = manager ?? throw new ModelException("Manager can't be null!");
-            _tableSeparator = tableSeparator;
         }
 
-        public void Run()
+        public IEnumerable<string> GetDataForShopTable(char tableSeparator)
         {
-            bool inMainMenu = true;
-            while (inMainMenu)
-            {
-                inMainMenu = MainMenuDialogue();
-            }
+            return _manager.AllShops
+                .Select(shop =>
+                    Convert.ToString(shop.Id) + tableSeparator +
+                    shop.Name + tableSeparator +
+                    shop.Address);
         }
 
-        private void CreatingShopDialogue()
+        public IEnumerable<string> GetDataForProductTable(char tableSeparator)
         {
-            string name = _ui.AskForName("shop");
-            string address = _ui.AskShopAddress();
-            try
-            {
-                _manager.RegisterShop(new Shop(name, address));
-            }
-            catch (ShopException exception)
-            {
-                _ui.ShowException(exception.Message);
-            }
+            return _manager.AllProducts
+                .Select(product =>
+                    Convert.ToString(product.Id) + tableSeparator +
+                    product.Name);
         }
 
-        private void RegisterProductDialogue()
+        public IEnumerable<string> GetDataForAssortmentTable(char tableSeparator,  int shopId)
         {
-            string name = _ui.AskForName("product");
-            try
-            {
-                _manager.RegisterProduct(new Product(name));
-            }
-            catch (ProductException exception)
-            {
-                _ui.ShowException(exception.Message);
-            }
+            return _manager.GetShop(shopId).Assortment
+                .Select(productConsignment =>
+                    Convert.ToString(productConsignment.Product.Id) + tableSeparator +
+                    productConsignment.Product.Name + tableSeparator +
+                    Convert.ToString(productConsignment.Count) + tableSeparator +
+                    Convert.ToString(productConsignment.Price, CultureInfo.CurrentCulture));
         }
 
-        private void ChoosingShopDialogue()
+        public string GetProductName(int productId)
         {
-            if (_manager.AllShops.Count == 0)
-            {
-                _ui.ShowWarning("No shops created!");
-                return;
-            }
+            return _manager.GetProduct(productId).Name;
+        }
 
-            int shopId = _ui.SingleSelection("shop", _manager.AllShops
+        public string GetShopName(int shopId)
+        {
+            return _manager.GetShop(shopId).Name;
+        }
+
+        public string GetShopAddress(int shopId)
+        {
+            return _manager.GetShop(shopId).Address;
+        }
+
+        public void CreateAndRegisterShop(string shopName, string shopAddress)
+        {
+            _manager.RegisterShop(new Shop(shopName, shopAddress));
+        }
+
+        public void CreateAndRegisterProduct(string productName)
+        {
+            _manager.RegisterProduct(new Product(productName));
+        }
+
+        public bool CheckIfShopsCreated()
+        {
+            return _manager.AllShops.Count != 0;
+        }
+
+        public string[] GetShopList()
+        {
+            return _manager.AllShops
                 .Select(shop => Convert.ToString(shop.Id) + ": " + shop.Name)
-                .ToArray());
-            try
-            {
-                Shop shop = _manager.GetShop(shopId);
-                bool inShopMenu = true;
-                while (inShopMenu)
-                {
-                    inShopMenu = ShopMenuDialogue(shop);
-                }
-            }
-            catch (Exception exception)
-            {
-                _ui.ShowException(exception.Message);
-            }
+                .ToArray();
         }
 
-        private void SettingPricesDialogue(Shop shop)
+        public string[] GetAssortmentList(int shopId)
         {
-            if (shop.Assortment.Count == 0)
-            {
-                _ui.ShowWarning("No products in shop!");
-                return;
-            }
-
-            List<int> productIds = _ui.MultiSelectionProducts(shop.Assortment
+            return _manager
+                .GetShop(shopId).Assortment
                 .Select(consignment => Convert.ToString(consignment.Product.Id) + ": " + consignment.Product.Name)
-                .ToArray());
-
-            foreach (int id in productIds)
-            {
-                try
-                {
-                    Product product = _manager.GetProduct(id);
-                    decimal price = _ui.AskForPrice(product.Name);
-                    shop.SetPrice(product, price);
-                }
-                catch (Exception exception)
-                {
-                    _ui.ShowException(exception.Message);
-                }
-            }
+                .ToArray();
         }
 
-        private void AddingProductsToShopDialogue(Shop shop)
+        public string[] GetAllProductsList()
         {
-            if (_manager.AllProducts.Count == 0)
-            {
-                _ui.ShowWarning("No products created!");
-                return;
-            }
-
-            var productConsignment = new List<ProductConsignment>();
-            List<int> productIds = _ui.MultiSelectionProducts(
-                _manager.AllProducts.Select(
-                    product => Convert.ToString(product.Id) + ": " + product.Name).ToArray());
-            foreach (Product product in productIds.Select(id => _manager.GetProduct(id)))
-            {
-                try
-                {
-                    uint productsCount = _ui.AskForProductCount(product.Name);
-                    decimal price = _ui.AskForPrice(product.Name);
-                    productConsignment.Add(new ProductConsignment(product, productsCount, price));
-                }
-                catch (Exception exception)
-                {
-                    _ui.ShowException(exception.Message);
-                }
-            }
-
-            shop.AddNewProducts(productConsignment);
-        }
-
-        private void BuyingDialogue(Shop shop)
-        {
-            if (shop.Assortment.Count == 0)
-            {
-                _ui.ShowWarning("No products in shop!");
-                return;
-            }
-
-            List<BuyingRequest> shoppingList = MakeShoppingList(
-                _ui.MultiSelectionProducts(
-                _manager.AllProducts
-                    .Select(product => Convert.ToString(product.Id) + ": " + product.Name)
-                    .ToArray()));
-
-            Person person = AddingPersonDialogue();
-            if (person == null || shoppingList.Count == 0)
-                return;
-            try
-            {
-                shop.Buy(person, shoppingList.ToArray());
-                _ui.ShowSuccessfulTransaction();
-            }
-            catch (Exception exception)
-            {
-                _ui.ShowException(exception.Message);
-            }
-        }
-
-        private void FindingCheapestShopDialogue()
-        {
-            int productId = _ui.SingleSelection("product", _manager.AllProducts
+            return _manager.AllProducts
                 .Select(product => Convert.ToString(product.Id) + ": " + product.Name)
-                .ToArray());
-
-            try
-            {
-                Product product = _manager.GetProduct(productId);
-                uint countToBuy = _ui.AskForProductCount(product.Name);
-                BuyingRequest request = new (product, countToBuy);
-
-                Shop shop = _manager.FindCheapestShop(request);
-                if (shop == null)
-                {
-                    _ui.ShowWarning("Cheapest shop wasn't found...");
-                    return;
-                }
-
-                _ui.ShowSuccessfullyFoundShop(shop.Id, shop.Name, shop.Address);
-                bool inShopMenu = true;
-                while (inShopMenu)
-                {
-                    inShopMenu = ShopMenuDialogue(shop);
-                }
-            }
-            catch (Exception exception)
-            {
-                _ui.ShowException(exception.Message);
-            }
+                .ToArray();
         }
 
-        private List<BuyingRequest> MakeShoppingList(List<int> productIds)
+        public void SetPrice(int shopId, int productId, decimal price)
         {
-            var shoppingList = new List<BuyingRequest>();
-            foreach (Product product in productIds.Select(id => _manager.GetProduct(id)))
-            {
-                try
-                {
-                    uint productsCount = _ui.AskForProductCount(product.Name);
-                    shoppingList.Add(new BuyingRequest(product, productsCount));
-                }
-                catch (Exception exception)
-                {
-                    _ui.ShowException(exception.Message);
-                }
-            }
-
-            return shoppingList;
+            _manager.GetShop(shopId).SetPrice(_manager.GetProduct(productId), price);
         }
 
-        private Person AddingPersonDialogue()
+        public bool CheckIfAssortmentEmpty(int shopId)
         {
-            string name = _ui.AskForName("person");
-            decimal balance = _ui.AskPersonBalance();
-            try
-            {
-                var person = new Person(name, balance);
-                return person;
-            }
-            catch (PersonException exception)
-            {
-                _ui.ShowException(exception.Message);
-            }
-
-            return null;
+            return _manager.GetShop(shopId).Assortment.Count == 0;
         }
 
-        private bool MainMenuDialogue()
+        public bool CheckIfProductsRegistered()
         {
-            int command = _ui.SingleSelection("command", MainMenuCommands);
-
-            switch (command)
-            {
-                case 1: CreatingShopDialogue(); break;
-                case 2: RegisterProductDialogue(); break;
-                case 3:
-                    var shopRows = new List<string>
-                        { "ID" + _tableSeparator + "Name" + _tableSeparator + "Address" };
-                    shopRows.AddRange(_manager.AllShops
-                        .Select(shop =>
-                            Convert.ToString(shop.Id) + _tableSeparator +
-                            shop.Name + _tableSeparator +
-                            shop.Address));
-
-                    _ui.GenerateTable(_tableSeparator, shopRows.ToArray());
-                    break;
-                case 4:
-                    var productRows = new List<string> { "ID" + _tableSeparator + "Name" };
-                    productRows.AddRange(_manager.AllProducts
-                        .Select(product =>
-                            Convert.ToString(product.Id) + _tableSeparator +
-                            product.Name));
-
-                    _ui.GenerateTable(_tableSeparator, productRows.ToArray());
-                    break;
-                case 5: ChoosingShopDialogue(); break;
-                case 6: FindingCheapestShopDialogue(); break;
-                case 7: return !_ui.ExitConfirmation();
-                default: throw new UIException("Unknown command error!");
-            }
-
-            return true;
+            return _manager.AllProducts.Count != 0;
         }
 
-        private bool ShopMenuDialogue(Shop shop)
+        public void AddProductConsignmentToShop(int shopId, int productId, uint count, decimal price)
         {
-            int command = _ui.SingleSelection("command", ShopMenuCommands);
-
-            switch (command)
+            _manager.GetShop(shopId).AddNewProducts(new List<ProductConsignment>
             {
-                case 1: AddingProductsToShopDialogue(shop); break;
-                case 2: SettingPricesDialogue(shop); break;
-                case 3: BuyingDialogue(shop); break;
-                case 4:
-                    var assortmentRows = new List<string>
-                        { "ID" + _tableSeparator + "Name" + _tableSeparator + "Count" + _tableSeparator + "Price" };
-                    assortmentRows.AddRange(shop.Assortment
-                        .Select(productConsignment =>
-                            Convert.ToString(productConsignment.Product.Id) + _tableSeparator +
-                            productConsignment.Product.Name + _tableSeparator +
-                            Convert.ToString(productConsignment.Count) + _tableSeparator +
-                            Convert.ToString(productConsignment.Price, CultureInfo.CurrentCulture)));
+                new (_manager.GetProduct(productId), count, price),
+            });
+        }
 
-                    _ui.GenerateTable(_tableSeparator, assortmentRows.ToArray());
-                    break;
-                case 5: return false;
-                default: throw new UIException("Unknown command error!");
-            }
+        public void Buy(
+            int shopId,
+            string personName,
+            decimal personBalance,
+            List<int> productIds,
+            List<uint> productCount)
+        {
+            Shop shop = _manager.GetShop(shopId);
+            var person = new Person(personName, personBalance);
+            shop.Buy(person, MakeShoppingList(productIds, productCount));
+        }
 
-            return true;
+        public int FindCheapestShop(int productId, uint count)
+        {
+            return _manager.FindCheapestShop(new BuyingRequest(_manager.GetProduct(productId), count)).Id;
+        }
+
+        private BuyingRequest[] MakeShoppingList(IReadOnlyCollection<int> productIds, IReadOnlyList<uint> productCount)
+        {
+            if (productIds.Count != productCount.Count)
+                throw new ModelException("Impossible to create ShoppingList!");
+
+            return productIds
+                .Select((id, counter) => new BuyingRequest(_manager.GetProduct(id), productCount[counter]))
+                .ToArray();
         }
     }
 }

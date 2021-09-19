@@ -19,7 +19,7 @@ namespace Shops.Entities
         public bool Equals(BuyingRequest other)
         {
             return other != null
-                   && Equals(Product, other.Product)
+                   && Product.Equals(other.Product)
                    && Count == other.Count;
         }
 

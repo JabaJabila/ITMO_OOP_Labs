@@ -8,8 +8,7 @@ namespace Shops
     {
         private static void Main()
         {
-            var application = new ShopLogicViewModel(new ConsoleUI(), new ShopManager());
-            application.Run();
+            new ConsoleUI(new ShopLogicViewModel(new ShopManager())).Run();
         }
     }
 }
