@@ -9,7 +9,7 @@ namespace Shops.Entities
         public Product(string name)
         {
             Id = _productUniqueId++;
-            Name = name ?? throw new ProductException("Product must has it's own name");
+            Name = name ?? throw new ArgumentNullException(nameof(name), $"{nameof(name)} can't be null!");
         }
 
         public int Id { get; }

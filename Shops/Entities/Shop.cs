@@ -13,8 +13,14 @@ namespace Shops.Entities
         public Shop(string name, string address)
         {
             Id = _shopUniqueId++;
-            Name = name ?? throw new ShopException("Shop must has it's own name");
-            Address = address ?? throw new ShopException("Shop must has it's own address");
+            Name = name ?? throw new ArgumentNullException(
+                nameof(name),
+                $"{nameof(name)} can't be null!");
+
+            Address = address ?? throw new ArgumentNullException(
+                nameof(address),
+                $"{nameof(address)} can't be null!");
+
             _productsInStock = new List<ProductConsignment>();
         }
 

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Shops.Entities;
 using Shops.Tools;
@@ -22,7 +23,7 @@ namespace Shops.Services
         public void RegisterShop(Shop shop)
         {
             if (shop == null)
-                throw new ShopException("Shop can't be null!");
+                throw new ArgumentNullException(nameof(shop), $"{nameof(shop)} can't be null!");
 
             _allShops.Add(shop);
         }
@@ -30,7 +31,7 @@ namespace Shops.Services
         public void RegisterProduct(Product product)
         {
             if (product == null)
-                throw new ProductException("Product can't be null!");
+                throw new ArgumentNullException(nameof(product));
 
             _allProducts.Add(product);
         }

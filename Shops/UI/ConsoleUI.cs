@@ -34,7 +34,10 @@ namespace Shops.UI
 
         public ConsoleUI(ShopLogicViewModel model, char tableSeparator = DefaultTableSeparator)
         {
-            _model = model ?? throw new UIException("ShopLogicViewModel can't be null!");
+            _model = model ?? throw new ArgumentNullException(
+                nameof(model),
+                $"{nameof(model)} can't be null!");
+
             _tableSeparator = tableSeparator;
         }
 
