@@ -1,5 +1,4 @@
 ﻿using System;
-using Shops.Tools;
 
 namespace Shops.Entities
 {
