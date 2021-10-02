@@ -1,4 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Isu.DataTypes;
+using Isu.Models;
 using Isu.Tools;
 
 namespace Isu.Entities
@@ -6,51 +10,74 @@ namespace Isu.Entities
     public class Group
     {
         private readonly uint _groupCapacity;
-
-        public Group(string groupName, uint groupCapacity)
+        private readonly List<GroupStudyClass> _timeTable;
+        private readonly List<Student> _students;
+        internal Group(GroupName groupName, uint groupCapacity)
         {
-            if (!CheckGroupName(groupName))
-                throw new IsuException($"{groupName} is invalid group name!");
-            GroupName = groupName;
-            Course = GroupName[2] - '0';
-            Students = new List<Student>();
+            GroupName = groupName ?? throw new ArgumentNullException(
+                nameof(groupName),
+                $"{nameof(groupName)} can't be null!");
+
+            _students = new List<Student>();
             _groupCapacity = groupCapacity;
+            _timeTable = new List<GroupStudyClass>();
         }
 
-        public string GroupName { get; }
-
-        public List<Student> Students { get; }
-
-        public int Course { get; }
+        public GroupName GroupName { get; }
+        public CourseNumber CourseNumber => GroupName.Course.CourseNumber;
+        public IReadOnlyCollection<Student> Students => _students;
+        public IReadOnlyCollection<GroupStudyClass> TimeTable => _timeTable;
 
         internal void AddStudentToGroup(Student student)
         {
+            if (student == null)
+            {
+                throw new ArgumentNullException(
+                    nameof(student),
+                    $"{nameof(student)} can't be null!");
+            }
+
             if (Students.Count == _groupCapacity)
                 throw new IsuException("Group reached limit of students!");
             if (student.Group != null)
                 throw new IsuException("Student is already has group!");
-            Students.Add(student);
+            _students.Add(student);
         }
 
         internal void DeleteStudentFromGroup(Student student)
         {
-            if (!Students.Remove(student))
+            if (student == null)
+            {
+                throw new ArgumentNullException(
+                    nameof(student),
+                    $"{nameof(student)} can't be null!");
+            }
+
+            if (!_students.Remove(student))
                 throw new IsuException("Student wasn't in this group!");
         }
 
-        private static bool CheckGroupName(string groupName)
+        internal void AddStudyClassToTimeTable(GroupStudyClass groupStudyClass)
         {
-            if (!(groupName.Length == 5 && groupName.Substring(0, 2) == "M3"))
-                return false;
-
-            if (groupName[2] < '0' || groupName[2] > '4') return false;
-            for (int charNum = 0; charNum < 2; ++charNum)
+            if (groupStudyClass == null)
             {
-                if (groupName[3 + charNum] >= '0' && groupName[3 + charNum] <= '9')
-                    return true;
+                throw new ArgumentNullException(
+                    nameof(groupStudyClass),
+                    $"{nameof(groupStudyClass)} can't be null!");
             }
 
-            return false;
+            if (_timeTable.Any(existingClass => groupStudyClass.TimeStamp.CheckIfIntersects(existingClass.TimeStamp)))
+                throw new IsuException($"StudyClass intersects with group {GroupName} TimeTable!");
+
+            _timeTable.Add(groupStudyClass);
+        }
+
+        internal void RemoveStudyClassFromTimeTable(GroupStudyClass groupStudyClass)
+        {
+            if (groupStudyClass == null)
+                throw new ArgumentNullException(nameof(groupStudyClass), $"{nameof(groupStudyClass)} can't be null!");
+
+            _timeTable.Remove(groupStudyClass);
         }
     }
 }

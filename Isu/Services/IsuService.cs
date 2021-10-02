@@ -2,17 +2,20 @@
 using System.Linq;
 using Isu.DataTypes;
 using Isu.Entities;
+using Isu.Models;
 using Isu.Tools;
 
 namespace Isu.Services
 {
     public class IsuService : IIsuService
     {
-        private const int DefaultStarterId = 300000;
+        private const int DefaultStarterId = 100000;
         private const uint DefaultGroupCapacity = 20;
         private readonly uint _groupCapacity;
         private readonly List<Student> _allStudents;
         private readonly List<Group> _allGroups;
+        private readonly List<Teacher> _allTeachers;
+        private readonly List<Room> _allRooms;
         private int _uniqueId;
 
         public IsuService(int starterId = DefaultStarterId, uint groupCapacity = DefaultGroupCapacity)
@@ -21,10 +24,15 @@ namespace Isu.Services
             _groupCapacity = groupCapacity;
             _allStudents = new List<Student>();
             _allGroups = new List<Group>();
+            _allRooms = new List<Room>();
+            _allTeachers = new List<Teacher>();
         }
 
-        public Group AddGroup(string name)
+        public Group AddGroup(GroupName name)
         {
+            if (_allGroups.Any(group => group.GroupName.Equals(name)))
+                throw new IsuException($"Group with name {name.Name} already exists!");
+
             var newGroup = new Group(name, _groupCapacity);
             _allGroups.Add(newGroup);
             return newGroup;
@@ -38,14 +46,29 @@ namespace Isu.Services
             return newStudent;
         }
 
-        public Student GetStudent(int id)
+        public Teacher AddTeacher(string name)
         {
-            foreach (Student student in _allStudents.Where(student => student.Id == id))
+            var newTeacher = new Teacher(name, _uniqueId++);
+            _allTeachers.Add(newTeacher);
+            return newTeacher;
+        }
+
+        public Room AddRoom(string number)
+        {
+            if (_allRooms.Any(room => room.Number == number))
             {
-                return student;
+                throw new IsuException($"Room with number {number} already exists!");
             }
 
-            throw new IsuException($"Student with id {id} doesn't exist");
+            var room = new Room(number);
+            _allRooms.Add(room);
+            return room;
+        }
+
+        public Student GetStudent(int id)
+        {
+            Student student = _allStudents.FirstOrDefault(student => student.Id == id);
+            return student ?? throw new IsuException($"Student with id {id} doesn't exist");
         }
 
         public Student FindStudent(string name)
@@ -53,28 +76,44 @@ namespace Isu.Services
             return _allStudents.FirstOrDefault(student => student.Name == name);
         }
 
-        public List<Student> FindStudents(string groupName)
+        public Teacher GetTeacher(int id)
         {
-            return _allGroups.Where(group => group.GroupName == groupName)
-                             .Select(group => group.Students)
-                             .FirstOrDefault();
+            Teacher teacher = _allTeachers.FirstOrDefault(teacher => teacher.Id == id);
+            return teacher ?? throw new IsuException($"Teacher with id {id} doesn't exist");
         }
 
-        public List<Student> FindStudents(CourseNumber course)
+        public Teacher FindTeacher(string name)
         {
-            return _allGroups.Where(group => group.Course == course.Number)
+            return _allTeachers.FirstOrDefault(teacher => teacher.Name == name);
+        }
+
+        public Room FindRoom(string number)
+        {
+            return _allRooms.FirstOrDefault(room => room.Number == number);
+        }
+
+        public IReadOnlyList<Student> FindStudents(GroupName groupName)
+        {
+            return _allGroups.Where(group => group.GroupName.Equals(groupName))
                              .SelectMany(group => group.Students)
                              .ToList();
         }
 
-        public Group FindGroup(string groupName)
+        public IReadOnlyList<Student> FindStudents(CourseNumber course)
         {
-            return _allGroups.FirstOrDefault(group => group.GroupName == groupName);
+            return _allGroups.Where(group => group.CourseNumber.Equals(course))
+                             .SelectMany(group => group.Students)
+                             .ToList();
         }
 
-        public List<Group> FindGroups(CourseNumber course)
+        public Group FindGroup(GroupName groupName)
         {
-            return _allGroups.Where(group => group.Course == course.Number).ToList();
+            return _allGroups.FirstOrDefault(group => group.GroupName.Equals(groupName));
+        }
+
+        public IReadOnlyList<Group> FindGroups(CourseNumber course)
+        {
+            return _allGroups.Where(group => group.CourseNumber.Equals(course)).ToList();
         }
 
         public void ChangeStudentGroup(Student student, Group newGroup)
