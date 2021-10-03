@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Isu.Entities
+namespace IsuExtra.Entities
 {
     public class MegaFaculty
     {

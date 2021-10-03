@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Isu.DataTypes;
 
-namespace Isu.Entities
+namespace IsuExtra.Entities
 {
     public class Faculty
     {

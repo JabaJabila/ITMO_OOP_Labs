@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using Isu.DataTypes;
-using Isu.Entities;
 using Isu.Tools;
+using IsuExtra.Entities;
 
-namespace Isu.Services
+namespace IsuExtra.Services
 {
     public class FacultyManager
     {

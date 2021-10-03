@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Isu.Models;
+using Isu.Entities;
 using Isu.Tools;
+using IsuExtra.Models;
 
-namespace Isu.Entities
+namespace IsuExtra.Entities
 {
     public class Subject
     {
@@ -36,9 +37,11 @@ namespace Isu.Entities
                                        $"that intersects with this timestamp!");
             }
 
-            if (group.TimeTable.Any(studyStream => studyStream.TimeStamp.CheckIfIntersects(timeStamp)))
+            if (_classes
+                .Where(otherStudyClass => otherStudyClass.Group.GroupName.Name == group.GroupName.Name)
+                .Any(otherStudyClass => otherStudyClass.TimeStamp.CheckIfIntersects(timeStamp)))
             {
-                throw new IsuException($"Group {group.GroupName.Name} has classes " +
+                throw new IsuException($"Group {@group.GroupName.Name} has classes " +
                                        $"that intersects with this timestamp!");
             }
 

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Isu.Tools;
 
-namespace Isu.Entities
+namespace IsuExtra.Entities
 {
     public class Room
     {

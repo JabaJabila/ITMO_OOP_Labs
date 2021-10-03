@@ -14,8 +14,6 @@ namespace Isu.Services
         private readonly uint _groupCapacity;
         private readonly List<Student> _allStudents;
         private readonly List<Group> _allGroups;
-        private readonly List<Teacher> _allTeachers;
-        private readonly List<Room> _allRooms;
         private int _uniqueId;
 
         public IsuService(int starterId = DefaultStarterId, uint groupCapacity = DefaultGroupCapacity)
@@ -24,8 +22,6 @@ namespace Isu.Services
             _groupCapacity = groupCapacity;
             _allStudents = new List<Student>();
             _allGroups = new List<Group>();
-            _allRooms = new List<Room>();
-            _allTeachers = new List<Teacher>();
         }
 
         public Group AddGroup(GroupName name)
@@ -46,25 +42,6 @@ namespace Isu.Services
             return newStudent;
         }
 
-        public Teacher AddTeacher(string name)
-        {
-            var newTeacher = new Teacher(name, _uniqueId++);
-            _allTeachers.Add(newTeacher);
-            return newTeacher;
-        }
-
-        public Room AddRoom(string number)
-        {
-            if (_allRooms.Any(room => room.Number == number))
-            {
-                throw new IsuException($"Room with number {number} already exists!");
-            }
-
-            var room = new Room(number);
-            _allRooms.Add(room);
-            return room;
-        }
-
         public Student GetStudent(int id)
         {
             Student student = _allStudents.FirstOrDefault(student => student.Id == id);
@@ -74,22 +51,6 @@ namespace Isu.Services
         public Student FindStudent(string name)
         {
             return _allStudents.FirstOrDefault(student => student.Name == name);
-        }
-
-        public Teacher GetTeacher(int id)
-        {
-            Teacher teacher = _allTeachers.FirstOrDefault(teacher => teacher.Id == id);
-            return teacher ?? throw new IsuException($"Teacher with id {id} doesn't exist");
-        }
-
-        public Teacher FindTeacher(string name)
-        {
-            return _allTeachers.FirstOrDefault(teacher => teacher.Name == name);
-        }
-
-        public Room FindRoom(string number)
-        {
-            return _allRooms.FirstOrDefault(room => room.Number == number);
         }
 
         public IReadOnlyList<Student> FindStudents(GroupName groupName)

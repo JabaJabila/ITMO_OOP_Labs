@@ -1,7 +1,8 @@
 ﻿using System;
-using Isu.Models;
+using Isu.Entities;
+using IsuExtra.Models;
 
-namespace Isu.Entities
+namespace IsuExtra.Entities
 {
     public class GroupStudyClass : StudyStream
     {
@@ -21,7 +22,7 @@ namespace Isu.Entities
                 nameof(group),
                 $"{nameof(group)} can't be null!");
 
-            group.AddStudyClassToTimeTable(this);
+            // group.AddStudyClassToTimeTable(this);
             }
 
         public Group Group { get; }
@@ -29,7 +30,7 @@ namespace Isu.Entities
 
         internal void DeleteGroupStudyClass()
         {
-            Group.RemoveStudyClassFromTimeTable(this);
+            // Group.RemoveStudyClassFromTimeTable(this);
             Delete();
         }
     }

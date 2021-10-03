@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Isu.DataTypes;
 using Isu.Entities;
-using Isu.Models;
 using Isu.Tools;
 using IsuExtra.Entities;
+using IsuExtra.Models;
 
 namespace IsuExtra.Services
 {
@@ -14,9 +14,18 @@ namespace IsuExtra.Services
         private const uint StandardGsaStreamCapacity = 30;
         private const uint CountOfGsaCoursesForStudents = 2;
         private readonly List<GsaCourse> _gsaCourses;
+        private readonly FacultyManager _facultyManager;
 
-        public GsaService()
+        public GsaService(FacultyManager facultyManager)
         {
+            if (facultyManager == null)
+            {
+                throw new ArgumentNullException(
+                    nameof(facultyManager),
+                    $"{nameof(facultyManager)} can't be null!");
+            }
+
+            _facultyManager = facultyManager;
             _gsaCourses = new List<GsaCourse>();
         }
 
@@ -87,7 +96,26 @@ namespace IsuExtra.Services
                     $"{nameof(student)} can't be null!");
             }
 
-            if (student.Group.GroupName.Faculty.MegaFaculty.Id.Equals(gsaCourse.MegaFaculty.Id))
+            Faculty studentFaculty = _facultyManager.MegaFaculties
+                .SelectMany(megaFaculty => megaFaculty.Faculties)
+                .FirstOrDefault(faculty => student.Group.GroupName.FacultyLetter == faculty.Letter);
+
+            if (studentFaculty == null)
+            {
+                throw new IsuException("Student can't choose GSA Course because" +
+                                       " his group not registered in University!");
+            }
+
+            Course studentCourse = studentFaculty.Courses.FirstOrDefault(course =>
+                course.Groups.Any(group => student.Group.GroupName.Name == group.GroupName.Name));
+
+            if (studentCourse == null)
+            {
+                throw new IsuException("Student can't choose GSA Course because" +
+                                       " his group not associated with any course!");
+            }
+
+            if (studentFaculty.MegaFaculty.Id.Equals(gsaCourse.MegaFaculty.Id))
             {
                 throw new IsuException($"Student {student.Name} is already " +
                                        $"studying on MegaFaculty {gsaCourse.MegaFaculty.Name}!");
@@ -99,10 +127,10 @@ namespace IsuExtra.Services
                                        $"{CountOfGsaCoursesForStudents} GSA Courses!");
             }
 
-            if (!student.Group.GroupName.Course.CourseNumber.Equals(gsaCourse.CourseNumber))
+            if (!student.Group.CourseNumber.Equals(gsaCourse.CourseNumber))
             {
                 throw new IsuException($"Student's course number " +
-                                       $"({student.Group.GroupName.Course.CourseNumber.Number})" +
+                                       $"({student.Group.CourseNumber.Number})" +
                                        $" not equals required GSA Course's course number " +
                                        $"({gsaCourse.CourseNumber.Number})");
             }
@@ -112,8 +140,11 @@ namespace IsuExtra.Services
                 throw new IsuException($"Student {student.Name} is already signed for this GSA course!");
             }
 
-            if (gsaCourse.GsaClasses.Any(gsaClass => student.Group.TimeTable.Any(studyClass =>
-                studyClass.TimeStamp.CheckIfIntersects(gsaClass.TimeStamp))))
+            if (gsaCourse.GsaClasses
+                .Any(gsaClass => studentCourse.Subjects.Any(subject =>
+                subject.StudyClasses.Any(
+                    studyClass => studyClass.TimeStamp.CheckIfIntersects(gsaClass.TimeStamp) &&
+                                  studyClass.Group.GroupName.Name == student.Group.GroupName.Name))))
             {
                 throw new IsuException($"Student {student.Name} has group classes which intersects with GSA classes!");
             }

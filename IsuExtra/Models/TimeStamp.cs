@@ -2,7 +2,7 @@
 using Isu.DataTypes;
 using Isu.Tools;
 
-namespace Isu.Models
+namespace IsuExtra.Models
 {
     public class TimeStamp
     {

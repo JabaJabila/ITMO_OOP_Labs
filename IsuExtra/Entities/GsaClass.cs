@@ -1,6 +1,5 @@
 ﻿using System;
-using Isu.Entities;
-using Isu.Models;
+using IsuExtra.Models;
 
 namespace IsuExtra.Entities
 {

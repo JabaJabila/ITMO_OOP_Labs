@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using Isu.DataTypes;
 using Isu.Entities;
-using Isu.Models;
 using Isu.Tools;
+using IsuExtra.Models;
 
 namespace IsuExtra.Entities
 {

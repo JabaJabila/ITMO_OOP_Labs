@@ -1,13 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using Isu.DataTypes;
+using Isu.Entities;
 using Isu.Tools;
 
-namespace Isu.Entities
+namespace IsuExtra.Entities
 {
     public class Course
     {
         private readonly List<Subject> _subjects;
+        private readonly List<Group> _groups;
 
         internal Course(CourseNumber courseNumber, Faculty faculty)
         {
@@ -20,11 +22,41 @@ namespace Isu.Entities
                 $"{nameof(faculty)} can't be null!");
 
             _subjects = new List<Subject>();
+            _groups = new List<Group>();
         }
 
         public CourseNumber CourseNumber { get; }
         public Faculty Faculty { get; }
         public IReadOnlyCollection<Subject> Subjects => _subjects;
+        public IReadOnlyCollection<Group> Groups => _groups;
+
+        internal void AddGroupOnCourse(Group group)
+        {
+            if (group == null)
+            {
+                throw new ArgumentNullException(
+                    nameof(group),
+                    $"{nameof(group)} can't be null!");
+            }
+
+            if (_groups.Contains(group))
+                throw new IsuException($"Group {group.GroupName.Name} is already on this course!");
+
+            _groups.Add(group);
+        }
+
+        internal void DeleteGroupFromCourse(Group group)
+        {
+            if (group == null)
+            {
+                throw new ArgumentNullException(
+                    nameof(group),
+                    $"{nameof(group)} can't be null!");
+            }
+
+            if (!_groups.Remove(group))
+                throw new IsuException($"Group {group.GroupName.Name} is not on this course!");
+        }
 
         internal Subject AddSubject(string name)
         {

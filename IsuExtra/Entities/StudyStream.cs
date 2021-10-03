@@ -1,7 +1,7 @@
 ﻿using System;
-using Isu.Models;
+using IsuExtra.Models;
 
-namespace Isu.Entities
+namespace IsuExtra.Entities
 {
     public class StudyStream
     {
