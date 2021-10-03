@@ -21,17 +21,9 @@ namespace IsuExtra.Entities
             Group = group ?? throw new ArgumentNullException(
                 nameof(group),
                 $"{nameof(group)} can't be null!");
-
-            // group.AddStudyClassToTimeTable(this);
-            }
+        }
 
         public Group Group { get; }
         public Subject Subject { get; }
-
-        internal void DeleteGroupStudyClass()
-        {
-            // Group.RemoveStudyClassFromTimeTable(this);
-            Delete();
-        }
     }
 }

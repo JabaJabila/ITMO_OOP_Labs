@@ -18,10 +18,5 @@ namespace IsuExtra.Entities
         }
 
         public GsaCourse GsaCourse { get; }
-
-        internal void DeleteGsaClass()
-        {
-            Delete();
-        }
     }
 }

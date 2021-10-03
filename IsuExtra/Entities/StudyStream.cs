@@ -30,7 +30,7 @@ namespace IsuExtra.Entities
         public Teacher Teacher { get; }
         public Room Room { get; }
 
-        protected void Delete()
+        internal void Delete()
         {
             Teacher.RemoveStudyClassFromTimeTable(this);
             Room.RemoveStudyClassFromTimeTable(this);

@@ -63,7 +63,7 @@ namespace IsuExtra.Entities
             if (!_classes.Remove(groupStudyClass))
                 throw new IsuException("GsaClass not on this GsaCourse!");
 
-            groupStudyClass.DeleteGroupStudyClass();
+            groupStudyClass.Delete();
         }
 
         internal void Delete()
