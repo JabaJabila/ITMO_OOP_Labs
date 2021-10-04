@@ -8,7 +8,7 @@ namespace Isu.Services
 {
     public class IsuService : IIsuService
     {
-        private const int DefaultStarterId = 300000;
+        private const int DefaultStarterId = 100000;
         private const uint DefaultGroupCapacity = 20;
         private readonly uint _groupCapacity;
         private readonly List<Student> _allStudents;
@@ -23,8 +23,11 @@ namespace Isu.Services
             _allGroups = new List<Group>();
         }
 
-        public Group AddGroup(string name)
+        public Group AddGroup(GroupName name)
         {
+            if (_allGroups.Any(group => group.GroupName.Equals(name)))
+                throw new IsuException($"Group with name {name.Name} already exists!");
+
             var newGroup = new Group(name, _groupCapacity);
             _allGroups.Add(newGroup);
             return newGroup;
@@ -40,12 +43,8 @@ namespace Isu.Services
 
         public Student GetStudent(int id)
         {
-            foreach (Student student in _allStudents.Where(student => student.Id == id))
-            {
-                return student;
-            }
-
-            throw new IsuException($"Student with id {id} doesn't exist");
+            Student student = _allStudents.FirstOrDefault(student => student.Id == id);
+            return student ?? throw new IsuException($"Student with id {id} doesn't exist");
         }
 
         public Student FindStudent(string name)
@@ -53,28 +52,28 @@ namespace Isu.Services
             return _allStudents.FirstOrDefault(student => student.Name == name);
         }
 
-        public List<Student> FindStudents(string groupName)
+        public IReadOnlyList<Student> FindStudents(GroupName groupName)
         {
-            return _allGroups.Where(group => group.GroupName == groupName)
-                             .Select(group => group.Students)
-                             .FirstOrDefault();
-        }
-
-        public List<Student> FindStudents(CourseNumber course)
-        {
-            return _allGroups.Where(group => group.Course == course.Number)
+            return _allGroups.Where(group => group.GroupName.Equals(groupName))
                              .SelectMany(group => group.Students)
                              .ToList();
         }
 
-        public Group FindGroup(string groupName)
+        public IReadOnlyList<Student> FindStudents(CourseNumber course)
         {
-            return _allGroups.FirstOrDefault(group => group.GroupName == groupName);
+            return _allGroups.Where(group => group.CourseNumber.Equals(course))
+                             .SelectMany(group => group.Students)
+                             .ToList();
         }
 
-        public List<Group> FindGroups(CourseNumber course)
+        public Group FindGroup(GroupName groupName)
         {
-            return _allGroups.Where(group => group.Course == course.Number).ToList();
+            return _allGroups.FirstOrDefault(group => group.GroupName.Equals(groupName));
+        }
+
+        public IReadOnlyList<Group> FindGroups(CourseNumber course)
+        {
+            return _allGroups.Where(group => group.CourseNumber.Equals(course)).ToList();
         }
 
         public void ChangeStudentGroup(Student student, Group newGroup)
