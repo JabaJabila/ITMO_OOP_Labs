@@ -11,9 +11,7 @@ namespace IsuExtra.Entities
 
         internal Teacher(string name, int id)
         {
-            Name = name ?? throw new ArgumentNullException(
-                nameof(name),
-                $"{nameof(name)} can't be null!");
+            Name = name ?? throw new ArgumentNullException(nameof(name));
 
             Id = id;
             _timeTable = new List<StudyStream>();
@@ -26,9 +24,9 @@ namespace IsuExtra.Entities
         public void AddStudyClassToTimeTable(StudyStream studyStream)
         {
             if (studyStream == null)
-                throw new ArgumentNullException(nameof(studyStream), $"{nameof(studyStream)} can't be null!");
+                throw new ArgumentNullException(nameof(studyStream));
 
-            if (_timeTable.Any(existingClass => studyStream.TimeStamp.CheckIfIntersects(existingClass.TimeStamp)))
+            if (_timeTable.Any(existingClass => studyStream.StudyStreamPeriod.CheckIfIntersects(existingClass.StudyStreamPeriod)))
                 throw new IsuException($"StudyClass intersects with teacher {Name}'s TimeTable!");
 
             _timeTable.Add(studyStream);
@@ -37,7 +35,7 @@ namespace IsuExtra.Entities
         internal void RemoveStudyClassFromTimeTable(StudyStream studyStream)
         {
             if (studyStream == null)
-                throw new ArgumentNullException(nameof(studyStream), $"{nameof(studyStream)} can't be null!");
+                throw new ArgumentNullException(nameof(studyStream));
 
             _timeTable.Remove(studyStream);
         }

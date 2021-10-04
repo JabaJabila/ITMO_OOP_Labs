@@ -10,14 +10,10 @@ namespace IsuExtra.Entities
 
         internal Faculty(string name, char letterOfFaculty, MegaFaculty megaFaculty)
         {
-            Name = name ?? throw new ArgumentNullException(
-                nameof(name),
-                $"{nameof(name)} can't be null!");
+            Name = name ?? throw new ArgumentNullException(nameof(name));
 
             Letter = letterOfFaculty;
-            MegaFaculty = megaFaculty ?? throw new ArgumentNullException(
-                nameof(megaFaculty),
-                $"{nameof(megaFaculty)} can't be null!");
+            MegaFaculty = megaFaculty ?? throw new ArgumentNullException(nameof(megaFaculty));
 
             _courses = new List<Course>();
         }

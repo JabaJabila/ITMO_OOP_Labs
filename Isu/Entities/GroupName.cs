@@ -2,7 +2,7 @@
 using Isu.DataTypes;
 using Isu.Tools;
 
-namespace Isu.Models
+namespace Isu.Entities
 {
     public class GroupName : IEquatable<GroupName>
     {
@@ -23,9 +23,7 @@ namespace Isu.Models
             FacultyLetter = facultyLetter;
             DegreeOfEducation = degreeOfEducation;
 
-            CourseNumber = courseNumber ?? throw new ArgumentNullException(
-                    nameof(courseNumber),
-                    $"{nameof(courseNumber)} can't be null!");
+            CourseNumber = courseNumber ?? throw new ArgumentNullException(nameof(courseNumber));
 
             _endOfGroupName = endOfGroupName;
         }

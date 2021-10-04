@@ -2,11 +2,11 @@
 using Isu.DataTypes;
 using Isu.Tools;
 
-namespace IsuExtra.Models
+namespace IsuExtra.Entities
 {
-    public class TimeStamp
+    public class StudyStreamPeriod
     {
-        public TimeStamp(
+        public StudyStreamPeriod(
             TimeSpan startTime,
             TimeSpan endTime,
             DayOfWeek day,
@@ -35,7 +35,7 @@ namespace IsuExtra.Models
         public TimeSpan StartTime { get; }
         public TimeSpan EndTime { get; }
 
-        public bool CheckIfIntersects(TimeStamp other)
+        public bool CheckIfIntersects(StudyStreamPeriod other)
         {
             if (DateOfEnd < other.DateOfStart || DateOfStart > other.DateOfEnd)
                 return false;

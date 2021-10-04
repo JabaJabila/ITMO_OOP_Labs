@@ -32,11 +32,7 @@ namespace IsuExtra.Services
         public Faculty CreateFaculty(string name, MegaFaculty megaFaculty, char letter)
         {
             if (megaFaculty == null)
-            {
-                throw new ArgumentNullException(
-                    nameof(megaFaculty),
-                    $"{nameof(megaFaculty)} can't be null!");
-            }
+                throw new ArgumentNullException(nameof(megaFaculty));
 
             if (letter is < 'A' or > 'Z')
                 throw new IsuException("Invalid letter of Faculty. Letter must be in range A..Z");
@@ -53,18 +49,10 @@ namespace IsuExtra.Services
         public Course AddCourseOnFaculty(Faculty faculty, CourseNumber courseNumber)
         {
             if (faculty == null)
-            {
-                throw new ArgumentNullException(
-                    nameof(faculty),
-                    $"{nameof(faculty)} can't be null!");
-            }
+                throw new ArgumentNullException(nameof(faculty));
 
             if (courseNumber == null)
-            {
-                throw new ArgumentNullException(
-                    nameof(courseNumber),
-                    $"{nameof(courseNumber)} can't be null!");
-            }
+                throw new ArgumentNullException(nameof(courseNumber));
 
             return faculty.AddCourse(courseNumber);
         }

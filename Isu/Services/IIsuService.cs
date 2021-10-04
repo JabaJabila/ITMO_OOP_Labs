@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using Isu.DataTypes;
 using Isu.Entities;
-using Isu.Models;
 
 namespace Isu.Services
 {

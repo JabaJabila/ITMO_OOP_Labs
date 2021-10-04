@@ -2,7 +2,6 @@
 using System.Linq;
 using Isu.DataTypes;
 using Isu.Entities;
-using Isu.Models;
 using Isu.Tools;
 
 namespace Isu.Services

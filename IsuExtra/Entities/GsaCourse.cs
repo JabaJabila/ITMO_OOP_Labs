@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Isu.DataTypes;
 using Isu.Entities;
 using Isu.Tools;
-using IsuExtra.Models;
 
 namespace IsuExtra.Entities
 {
@@ -18,17 +17,11 @@ namespace IsuExtra.Entities
             CourseNumber courseNumber,
             uint capacity)
         {
-            MegaFaculty = megaFaculty ?? throw new ArgumentNullException(
-                nameof(megaFaculty),
-                $"{nameof(megaFaculty)} can't be null!");
+            MegaFaculty = megaFaculty ?? throw new ArgumentNullException(nameof(megaFaculty));
 
-            Name = name ?? throw new ArgumentNullException(
-                nameof(name),
-                $"{nameof(name)} can't be null!");
+            Name = name ?? throw new ArgumentNullException(nameof(name));
 
-            CourseNumber = courseNumber ?? throw new ArgumentNullException(
-                nameof(courseNumber),
-                $"{nameof(courseNumber)} can't be null!");
+            CourseNumber = courseNumber ?? throw new ArgumentNullException(nameof(courseNumber));
 
             Capacity = capacity;
             _gsaClasses = new List<GsaClass>();
@@ -44,11 +37,11 @@ namespace IsuExtra.Entities
 
         internal GsaClass AddGsaClass(
             GsaCourse gsaCourse,
-            TimeStamp timeStamp,
+            StudyStreamPeriod studyStreamPeriod,
             Teacher teacher,
             Room room)
         {
-            var gsaClass = new GsaClass(gsaCourse, timeStamp, teacher, room);
+            var gsaClass = new GsaClass(gsaCourse, studyStreamPeriod, teacher, room);
             _gsaClasses.Add(gsaClass);
             return gsaClass;
         }
@@ -56,11 +49,7 @@ namespace IsuExtra.Entities
         internal void DeleteGsaClass(GsaClass gsaClass)
         {
             if (gsaClass == null)
-            {
-                throw new ArgumentNullException(
-                    nameof(gsaClass),
-                    $"{nameof(gsaClass)} can't be null!");
-            }
+                throw new ArgumentNullException(nameof(gsaClass));
 
             if (!_gsaClasses.Remove(gsaClass))
                 throw new IsuException("GsaClass not on this GsaCourse!");
@@ -71,11 +60,7 @@ namespace IsuExtra.Entities
         internal void AddStudent(Student student)
         {
             if (student == null)
-            {
-                throw new ArgumentNullException(
-                    nameof(student),
-                    $"{nameof(student)} can't be null!");
-            }
+                throw new ArgumentNullException(nameof(student));
 
             if (_students.Count == Capacity)
                 throw new IsuException($"Limit of students {Capacity} reached!");
@@ -86,11 +71,7 @@ namespace IsuExtra.Entities
         internal void DeleteStudent(Student student)
         {
             if (student == null)
-            {
-                throw new ArgumentNullException(
-                    nameof(student),
-                    $"{nameof(student)} can't be null");
-            }
+                throw new ArgumentNullException(nameof(student));
 
             if (!_students.Remove(student))
                 throw new IsuException($"Student {student.Name} not in this GsaCourse!");

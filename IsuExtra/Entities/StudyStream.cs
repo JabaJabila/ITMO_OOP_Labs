@@ -1,32 +1,25 @@
 ﻿using System;
-using IsuExtra.Models;
 
 namespace IsuExtra.Entities
 {
     public class StudyStream
     {
         protected StudyStream(
-            TimeStamp timeStamp,
+            StudyStreamPeriod studyStreamPeriod,
             Teacher teacher,
             Room room)
         {
-            TimeStamp = timeStamp ?? throw new ArgumentNullException(
-                nameof(timeStamp),
-                $"{nameof(timeStamp)} can't be null!");
+            StudyStreamPeriod = studyStreamPeriod ?? throw new ArgumentNullException(nameof(studyStreamPeriod));
 
-            Teacher = teacher ?? throw new ArgumentNullException(
-                nameof(teacher),
-                $"{nameof(teacher)} can't be null!");
+            Teacher = teacher ?? throw new ArgumentNullException(nameof(teacher));
 
-            Room = room ?? throw new ArgumentNullException(
-                nameof(room),
-                $"{nameof(room)} can't be null!");
+            Room = room ?? throw new ArgumentNullException(nameof(room));
 
             room.AddStudyClassToTimeTable(this);
             teacher.AddStudyClassToTimeTable(this);
         }
 
-        public TimeStamp TimeStamp { get; }
+        public StudyStreamPeriod StudyStreamPeriod { get; }
         public Teacher Teacher { get; }
         public Room Room { get; }
 

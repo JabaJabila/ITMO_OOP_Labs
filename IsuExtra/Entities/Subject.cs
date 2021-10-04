@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Isu.Entities;
 using Isu.Tools;
-using IsuExtra.Models;
 
 namespace IsuExtra.Entities
 {
@@ -13,9 +12,7 @@ namespace IsuExtra.Entities
 
         internal Subject(string name)
         {
-            Name = name ?? throw new ArgumentNullException(
-                    nameof(name),
-                    $"{nameof(name)} can't be null!");
+            Name = name ?? throw new ArgumentNullException(nameof(name));
 
             _classes = new List<GroupStudyClass>();
         }
@@ -23,15 +20,33 @@ namespace IsuExtra.Entities
         public string Name { get; }
         public IReadOnlyCollection<GroupStudyClass> StudyClasses => _classes;
 
-        internal GroupStudyClass AddStudyClass(TimeStamp timeStamp, Group group,  Teacher teacher, Room room)
+        public GroupStudyClass AddGroupStudyClass(
+            StudyStreamPeriod studyStreamPeriod,
+            Group group,
+            Teacher teacher,
+            Room room)
         {
-            if (teacher.TimeTable.Any(studyStream => studyStream.TimeStamp.CheckIfIntersects(timeStamp)))
+            if (studyStreamPeriod == null)
+                throw new ArgumentNullException(nameof(studyStreamPeriod));
+
+            if (teacher == null)
+                throw new ArgumentNullException(nameof(teacher));
+
+            if (group == null)
+                throw new ArgumentNullException(nameof(group));
+
+            if (room == null)
+                throw new ArgumentNullException(nameof(room));
+
+            if (teacher.TimeTable.Any(studyStream =>
+                studyStream.StudyStreamPeriod.CheckIfIntersects(studyStreamPeriod)))
             {
                 throw new IsuException($"Teacher {teacher.Name} has classes " +
                                        $"that intersects with this timestamp!");
             }
 
-            if (room.TimeTable.Any(studyStream => studyStream.TimeStamp.CheckIfIntersects(timeStamp)))
+            if (room.TimeTable.Any(studyStream =>
+                studyStream.StudyStreamPeriod.CheckIfIntersects(studyStreamPeriod)))
             {
                 throw new IsuException($"Room {room.Number} is used for classes " +
                                        $"that intersects with this timestamp!");
@@ -39,26 +54,22 @@ namespace IsuExtra.Entities
 
             if (_classes
                 .Where(otherStudyClass => otherStudyClass.Group.GroupName.Name == group.GroupName.Name)
-                .Any(otherStudyClass => otherStudyClass.TimeStamp.CheckIfIntersects(timeStamp)))
+                .Any(otherStudyClass => otherStudyClass.StudyStreamPeriod.CheckIfIntersects(studyStreamPeriod)))
             {
                 throw new IsuException($"Group {@group.GroupName.Name} has classes " +
                                        $"that intersects with this timestamp!");
             }
 
-            var studyClass = new GroupStudyClass(this, timeStamp, group, teacher, room);
+            var studyClass = new GroupStudyClass(this, studyStreamPeriod, group, teacher, room);
 
             _classes.Add(studyClass);
             return studyClass;
         }
 
-        internal void DeleteStudyClass(GroupStudyClass groupStudyClass)
+        public void DeleteStudyClass(GroupStudyClass groupStudyClass)
         {
             if (groupStudyClass == null)
-            {
-                throw new ArgumentNullException(
-                    nameof(groupStudyClass),
-                    $"{nameof(groupStudyClass)} can't be null!");
-            }
+                throw new ArgumentNullException(nameof(groupStudyClass));
 
             if (!_classes.Remove(groupStudyClass))
                 throw new IsuException("GsaClass not on this GsaCourse!");

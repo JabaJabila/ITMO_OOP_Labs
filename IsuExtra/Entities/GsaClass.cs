@@ -1,5 +1,4 @@
 ﻿using System;
-using IsuExtra.Models;
 
 namespace IsuExtra.Entities
 {
@@ -7,14 +6,12 @@ namespace IsuExtra.Entities
     {
         internal GsaClass(
             GsaCourse gsaCourse,
-            TimeStamp timeStamp,
+            StudyStreamPeriod studyStreamPeriod,
             Teacher teacher,
             Room room)
-            : base(timeStamp, teacher, room)
+            : base(studyStreamPeriod, teacher, room)
         {
-            GsaCourse = gsaCourse ?? throw new ArgumentNullException(
-                nameof(gsaCourse),
-                $"{nameof(gsaCourse)} can't be null!");
+            GsaCourse = gsaCourse ?? throw new ArgumentNullException(nameof(gsaCourse));
         }
 
         public GsaCourse GsaCourse { get; }

@@ -5,7 +5,6 @@ using Isu.DataTypes;
 using Isu.Entities;
 using Isu.Tools;
 using IsuExtra.Entities;
-using IsuExtra.Models;
 
 namespace IsuExtra.Services
 {
@@ -18,14 +17,7 @@ namespace IsuExtra.Services
 
         public GsaService(FacultyManager facultyManager)
         {
-            if (facultyManager == null)
-            {
-                throw new ArgumentNullException(
-                    nameof(facultyManager),
-                    $"{nameof(facultyManager)} can't be null!");
-            }
-
-            _facultyManager = facultyManager;
+            _facultyManager = facultyManager ?? throw new ArgumentNullException(nameof(facultyManager));
             _gsaCourses = new List<GsaCourse>();
         }
 
@@ -49,33 +41,29 @@ namespace IsuExtra.Services
 
         public GsaClass AddGsaClass(
             GsaCourse gsaCourse,
-            TimeStamp timeStamp,
+            StudyStreamPeriod studyStreamPeriod,
             Teacher teacher,
             Room room)
         {
-            if (teacher.TimeTable.Any(studyStream => studyStream.TimeStamp.CheckIfIntersects(timeStamp)))
+            if (teacher.TimeTable.Any(studyStream => studyStream.StudyStreamPeriod.CheckIfIntersects(studyStreamPeriod)))
             {
                 throw new IsuException($"Teacher {teacher.Name} has classes " +
                                        $"that intersects with this timestamp!");
             }
 
-            if (room.TimeTable.Any(studyStream => studyStream.TimeStamp.CheckIfIntersects(timeStamp)))
+            if (room.TimeTable.Any(studyStream => studyStream.StudyStreamPeriod.CheckIfIntersects(studyStreamPeriod)))
             {
                 throw new IsuException($"Room {room.Number} is used for classes " +
                                        $"that intersects with this timestamp!");
             }
 
-            return gsaCourse.AddGsaClass(gsaCourse, timeStamp, teacher, room);
+            return gsaCourse.AddGsaClass(gsaCourse, studyStreamPeriod, teacher, room);
         }
 
         public void DeleteGsaClass(GsaClass gsaClass)
         {
             if (gsaClass == null)
-            {
-                throw new ArgumentNullException(
-                    nameof(gsaClass),
-                    $"{nameof(gsaClass)} can't be null!");
-            }
+                throw new ArgumentNullException(nameof(gsaClass));
 
             gsaClass.GsaCourse.DeleteGsaClass(gsaClass);
         }
@@ -83,18 +71,10 @@ namespace IsuExtra.Services
         public void AddStudentToGsaCourse(GsaCourse gsaCourse, Student student)
         {
             if (gsaCourse == null)
-            {
-                throw new ArgumentNullException(
-                    nameof(gsaCourse),
-                    $"{nameof(gsaCourse)} can't be null!");
-            }
+                throw new ArgumentNullException(nameof(gsaCourse));
 
             if (student == null)
-            {
-                throw new ArgumentNullException(
-                    nameof(student),
-                    $"{nameof(student)} can't be null!");
-            }
+                throw new ArgumentNullException(nameof(student));
 
             Faculty studentFaculty = _facultyManager.MegaFaculties
                 .SelectMany(megaFaculty => megaFaculty.Faculties)
@@ -143,7 +123,7 @@ namespace IsuExtra.Services
             if (gsaCourse.GsaClasses
                 .Any(gsaClass => studentCourse.Subjects.Any(subject =>
                 subject.StudyClasses.Any(
-                    studyClass => studyClass.TimeStamp.CheckIfIntersects(gsaClass.TimeStamp) &&
+                    studyClass => studyClass.StudyStreamPeriod.CheckIfIntersects(gsaClass.StudyStreamPeriod) &&
                                   studyClass.Group.GroupName.Name == student.Group.GroupName.Name))))
             {
                 throw new IsuException($"Student {student.Name} has group classes which intersects with GSA classes!");
@@ -155,18 +135,10 @@ namespace IsuExtra.Services
         public void DeleteStudentFromGsaCourse(GsaCourse gsaCourse, Student student)
         {
             if (gsaCourse == null)
-            {
-                throw new ArgumentNullException(
-                    nameof(gsaCourse),
-                    $"{nameof(gsaCourse)} can't be null!");
-            }
+                throw new ArgumentNullException(nameof(gsaCourse));
 
             if (student == null)
-            {
-                throw new ArgumentNullException(
-                    nameof(student),
-                    $"{nameof(student)} can't be null!");
-            }
+                throw new ArgumentNullException(nameof(student));
 
             gsaCourse.DeleteStudent(student);
         }
@@ -174,11 +146,7 @@ namespace IsuExtra.Services
         public IReadOnlyList<GsaCourse> GetGsaCoursesWithSameCourseNumber(CourseNumber courseNumber)
         {
             if (courseNumber == null)
-            {
-                throw new ArgumentNullException(
-                    nameof(courseNumber),
-                    $"{nameof(courseNumber)} can't be null!");
-            }
+                throw new ArgumentNullException(nameof(courseNumber));
 
             return _gsaCourses.Where(gsaCourse => gsaCourse.CourseNumber.Equals(courseNumber)).ToList();
         }
@@ -186,11 +154,7 @@ namespace IsuExtra.Services
         public IReadOnlyList<Student> GetStudentsFromGsaCourse(GsaCourse gsaCourse)
         {
             if (gsaCourse == null)
-            {
-                throw new ArgumentNullException(
-                    nameof(gsaCourse),
-                    $"{nameof(gsaCourse)} can't be null!");
-            }
+                throw new ArgumentNullException(nameof(gsaCourse));
 
             return gsaCourse.Students.ToList();
         }

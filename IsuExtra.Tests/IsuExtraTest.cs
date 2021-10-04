@@ -2,11 +2,9 @@
 using System.Linq;
 using Isu.DataTypes;
 using Isu.Entities;
-using Isu.Models;
 using Isu.Services;
 using Isu.Tools;
 using IsuExtra.Entities;
-using IsuExtra.Models;
 using IsuExtra.Services;
 using NUnit.Framework;
 
@@ -19,7 +17,6 @@ namespace IsuExtra.Tests
         private GsaService _gsaService;
         private StudyProcessManager _studyProcessManager;
         private FacultyManager _facultyManager;
-        private CourseManager _courseManager;
 
         [SetUp]
         public void Setup()
@@ -28,7 +25,6 @@ namespace IsuExtra.Tests
             _facultyManager = new FacultyManager();
             _gsaService = new GsaService(_facultyManager);
             _studyProcessManager = new StudyProcessManager();
-            _courseManager = new CourseManager();
         }
         
         [TestCase("TINT", "FITP", 'M')]
@@ -142,13 +138,13 @@ namespace IsuExtra.Tests
             WeekAlternation week1,
             WeekAlternation week2)
         {
-            var time1 = new TimeStamp(new TimeSpan(hoursBegin1, minutesBegin1, 0),
+            var time1 = new StudyStreamPeriod(new TimeSpan(hoursBegin1, minutesBegin1, 0),
                 new TimeSpan(hoursEnd1, minutesEnd1, 0),
                 day,
                 DateTime.Now,
                 DateTime.Now + new TimeSpan(365, 0, 0),
                 week1);
-            var time2 = new TimeStamp(new TimeSpan(hoursBegin2, minutesBegin2, 0),
+            var time2 = new StudyStreamPeriod(new TimeSpan(hoursBegin2, minutesBegin2, 0),
                 new TimeSpan(hoursEnd2, minutesEnd2, 0),
                 day,
                 DateTime.Now,
@@ -208,13 +204,13 @@ namespace IsuExtra.Tests
             WeekAlternation week1,
             WeekAlternation week2)
         {
-            var time1 = new TimeStamp(new TimeSpan(hoursBegin1, minutesBegin1, 0),
+            var time1 = new StudyStreamPeriod(new TimeSpan(hoursBegin1, minutesBegin1, 0),
                 new TimeSpan(hoursEnd1, minutesEnd1, 0),
                 day1,
                 DateTime.Now,
                 DateTime.Now + new TimeSpan(365, 0, 0),
                 week1);
-            var time2 = new TimeStamp(new TimeSpan(hoursBegin2, minutesBegin2, 0),
+            var time2 = new StudyStreamPeriod(new TimeSpan(hoursBegin2, minutesBegin2, 0),
                 new TimeSpan(hoursEnd2, minutesEnd2, 0), 
                 day2,
                 DateTime.Now,
@@ -283,7 +279,7 @@ namespace IsuExtra.Tests
         {
             Assert.Throws<IsuException>(() =>
             {
-                new TimeStamp(
+                new StudyStreamPeriod(
                     new TimeSpan(hoursBegin, minutesBegin, 0), 
                     new TimeSpan(hoursEnd, minutesEnd, 0), 
                     day,
@@ -305,8 +301,8 @@ namespace IsuExtra.Tests
             MegaFaculty megaFaculty = _facultyManager.CreateMegaFaculty("MegaFaculty");
             Faculty faculty = _facultyManager.CreateFaculty("FITP", megaFaculty, 'M');
             Course course = _facultyManager.AddCourseOnFaculty(faculty, new CourseNumber(1));
-            Subject subject = _courseManager.AddSubjectOnCourse(course, "Programming");
-            var time = new TimeStamp(
+            Subject subject = course.AddSubjectToCourse("Programming");
+            var time = new StudyStreamPeriod(
                 new TimeSpan(hoursBegin, minutesBegin, 0),
                 new TimeSpan(hoursEnd, minutesEnd, 0),
                 day,
@@ -316,16 +312,16 @@ namespace IsuExtra.Tests
             Teacher teacher = _studyProcessManager.AddTeacher("teacher");
             var groupName = new GroupName('M', new CourseNumber(courseNumber), "00");
             Group group = _isuService.AddGroup(groupName);
-            _courseManager.AddGroupToCourse(group, course);
-            GroupStudyClass groupStudyClass = _courseManager.AddGroupStudyClass(subject, time, group, teacher, room);
+            course.AddGroupToCourse(group);
+            GroupStudyClass groupStudyClass = subject.AddGroupStudyClass(time, group, teacher, room);
             Assert.AreEqual(groupStudyClass, subject.StudyClasses.FirstOrDefault());
             Assert.AreEqual(groupStudyClass, teacher.TimeTable.FirstOrDefault());
             Assert.AreEqual(groupStudyClass, room.TimeTable.FirstOrDefault());
-            _courseManager.DeleteStudyClass(subject, groupStudyClass);
+            subject.DeleteStudyClass(groupStudyClass);
             Assert.IsEmpty(subject.StudyClasses);
             Assert.IsEmpty(teacher.TimeTable);
             Assert.IsEmpty(room.TimeTable);
-            _courseManager.DeleteSubjectFromCourse(course, subject);
+            course.DeleteSubjectFromCourse(subject);
             Assert.IsEmpty(course.Subjects);
         }
 
@@ -357,14 +353,14 @@ namespace IsuExtra.Tests
             MegaFaculty megaFaculty = _facultyManager.CreateMegaFaculty("MegaFaculty");
             Faculty faculty = _facultyManager.CreateFaculty("FITP", megaFaculty, 'M');
             Course course = _facultyManager.AddCourseOnFaculty(faculty, new CourseNumber(1));
-            Subject subject = _courseManager.AddSubjectOnCourse(course, "Programming");
-            var time1 = new TimeStamp(
+            Subject subject = course.AddSubjectToCourse("Programming");
+            var time1 = new StudyStreamPeriod(
                 new TimeSpan(hoursBegin1, minutesBegin1, 0),
                 new TimeSpan(hoursEnd1, minutesEnd1, 0),
                 day,
                 DateTime.Now,
                 DateTime.Now + new TimeSpan(365, 0, 0));
-            var time2 = new TimeStamp(
+            var time2 = new StudyStreamPeriod(
                 new TimeSpan(hoursBegin2, minutesBegin2, 0),
                 new TimeSpan(hoursEnd2, minutesEnd2, 0),
                 day,
@@ -378,24 +374,24 @@ namespace IsuExtra.Tests
             var groupName2 = new GroupName('M', new CourseNumber(courseNumber), "01");
             Group group1 = _isuService.AddGroup(groupName1);
             Group group2 = _isuService.AddGroup(groupName2);
-            _courseManager.AddGroupToCourse(group1, course);
-            _courseManager.AddGroupToCourse(group2, course);
-            _courseManager.AddGroupStudyClass(subject, time1, group1, teacher1, room1);
+            course.AddGroupToCourse(group1);
+            course.AddGroupToCourse(group2);
+            subject.AddGroupStudyClass(time1, group1, teacher1, room1);
             Assert.Throws<IsuException>(() =>
             {
-                _courseManager.AddGroupStudyClass(subject, time2, group1, teacher1, room1);
+                subject.AddGroupStudyClass(time2, group1, teacher1, room1);
             });
             Assert.Throws<IsuException>(() =>
             {
-                _courseManager.AddGroupStudyClass(subject, time2, group2, teacher2, room1);
+                subject.AddGroupStudyClass(time2, group2, teacher2, room1);
             });
             Assert.Throws<IsuException>(() =>
             {
-                _courseManager.AddGroupStudyClass(subject, time2, group2, teacher1, room2);
+                subject.AddGroupStudyClass(time2, group2, teacher1, room2);
             });
             Assert.Throws<IsuException>(() =>
             {
-                _courseManager.AddGroupStudyClass(subject, time2, group1, teacher2, room2);
+                subject.AddGroupStudyClass(time2, group1, teacher2, room2);
             });
         }
 
@@ -424,7 +420,7 @@ namespace IsuExtra.Tests
             GsaCourse course = _gsaService.AddGsaCourse(megaFaculty, gsaCourseName, new CourseNumber(courseNumber));
             Room room = _studyProcessManager.AddRoom("room");
             Teacher teacher = _studyProcessManager.AddTeacher("teacher");
-            var time = new TimeStamp(
+            var time = new StudyStreamPeriod(
                 new TimeSpan(hoursBegin, minutesBegin, 0),
                 new TimeSpan(hoursEnd, minutesEnd, 0),
                 day,
@@ -456,7 +452,7 @@ namespace IsuExtra.Tests
             WeekAlternation week)
         {
             MegaFaculty megaFaculty = _facultyManager.CreateMegaFaculty("MegaFaculty");
-            var time = new TimeStamp(
+            var time = new StudyStreamPeriod(
                 new TimeSpan(hoursBegin, minutesBegin, 0),
                 new TimeSpan(hoursEnd, minutesEnd, 0),
                 day,
@@ -508,12 +504,12 @@ namespace IsuExtra.Tests
             Course course = _facultyManager.AddCourseOnFaculty(faculty, new CourseNumber(numberOfCourse));
             var groupName = new GroupName(facultyLetter,new CourseNumber(numberOfCourse), endOfNameOfGroup);
             Group group = _isuService.AddGroup(groupName);
-            _courseManager.AddGroupToCourse(group, course);
+            course.AddGroupToCourse(group);
             Student student = _isuService.AddStudent(group, studentName);
             GsaCourse gsaCourse = _gsaService.AddGsaCourse(megaFaculty2, "GSA", new CourseNumber(numberOfCourse));
             Room room = _studyProcessManager.AddRoom("room");
             Teacher teacher = _studyProcessManager.AddTeacher("teacher");
-            var time = new TimeStamp(
+            var time = new StudyStreamPeriod(
                 new TimeSpan(hoursBegin, minutesBegin, 0),
                 new TimeSpan(hoursEnd, minutesEnd, 0),
                 day,
@@ -552,13 +548,13 @@ namespace IsuExtra.Tests
             Course course = _facultyManager.AddCourseOnFaculty(faculty, new CourseNumber(numberOfCourse));
             var groupName = new GroupName(facultyLetter, new CourseNumber(numberOfCourse), endOfNameOfGroup);
             Group group = _isuService.AddGroup(groupName);
-            _courseManager.AddGroupToCourse(group, course);
+            course.AddGroupToCourse(group);
             Student student1 = _isuService.AddStudent(_isuService.FindGroup(groupName), "student1");
             Student student2 = _isuService.AddStudent(_isuService.FindGroup(groupName), "student2");
             GsaCourse gsaCourse = _gsaService.AddGsaCourse(megaFaculty2, "GSA", new CourseNumber(numberOfCourse), 1);
             Room room = _studyProcessManager.AddRoom("room");
             Teacher teacher = _studyProcessManager.AddTeacher("teacher");
-            var time = new TimeStamp(
+            var time = new StudyStreamPeriod(
                 new TimeSpan(hoursBegin, minutesBegin, 0),
                 new TimeSpan(hoursEnd, minutesEnd, 0),
                 day,
@@ -598,8 +594,8 @@ namespace IsuExtra.Tests
             MegaFaculty megaFaculty2 = _facultyManager.CreateMegaFaculty("MegaFaculty2");
             Faculty faculty = _facultyManager.CreateFaculty("FITP", megaFaculty1, facultyLetter);
             Course course = _facultyManager.AddCourseOnFaculty(faculty, new CourseNumber(numberOfCourse));
-            Subject subject = _courseManager.AddSubjectOnCourse(course, "Programming");
-            var time = new TimeStamp(
+            Subject subject = course.AddSubjectToCourse("Programming");
+            var time = new StudyStreamPeriod(
                 new TimeSpan(hoursBegin, minutesBegin, 0),
                 new TimeSpan(hoursEnd, minutesEnd, 0),
                 day,
@@ -612,8 +608,8 @@ namespace IsuExtra.Tests
             Teacher teacher2 = _studyProcessManager.AddTeacher("teacher2");
             var groupName = new GroupName(facultyLetter, new CourseNumber(numberOfCourse), endOfNameOfGroup);
             Group group = _isuService.AddGroup(groupName);
-            _courseManager.AddGroupToCourse(group, course);
-            _courseManager.AddGroupStudyClass(subject, time, group, teacher1, room1);
+            course.AddGroupToCourse(group);
+            subject.AddGroupStudyClass(time, group, teacher1, room1);
             GsaCourse gsaCourse = _gsaService.AddGsaCourse(megaFaculty2, "GSA", new CourseNumber(numberOfCourse));
             _gsaService.AddGsaClass(gsaCourse, time, teacher2, room2);
             Student student = _isuService.AddStudent(group, "Student");
@@ -640,7 +636,7 @@ namespace IsuExtra.Tests
             Course course = _facultyManager.AddCourseOnFaculty(faculty, new CourseNumber(numberOfCourse));
             var groupName = new GroupName(facultyLetter, new CourseNumber(numberOfCourse), endOfNameOfGroup);
             Group group = _isuService.AddGroup(groupName);
-            _courseManager.AddGroupToCourse(group, course);
+            course.AddGroupToCourse(group);
             Student student = _isuService.AddStudent(_isuService.FindGroup(groupName), studentName);
             GsaCourse gsaCourse = _gsaService.AddGsaCourse(megaFaculty, "GSA", new CourseNumber(numberOfCourse));
             
@@ -669,7 +665,7 @@ namespace IsuExtra.Tests
             Course course = _facultyManager.AddCourseOnFaculty(faculty, new CourseNumber(numberOfStudentCourse));
             var groupName = new GroupName(facultyLetter, new CourseNumber(numberOfStudentCourse), endOfNameOfGroup);
             Group group = _isuService.AddGroup(groupName);
-            _courseManager.AddGroupToCourse(group, course);
+            course.AddGroupToCourse(group);
             Student student = _isuService.AddStudent(_isuService.FindGroup(groupName), studentName);
             GsaCourse gsaCourse = _gsaService.AddGsaCourse(megaFaculty2, "GSA", new CourseNumber(numberOfGsaCourse));
 
@@ -696,7 +692,7 @@ namespace IsuExtra.Tests
             Course course = _facultyManager.AddCourseOnFaculty(faculty, new CourseNumber(numberOfCourse));
             var groupName = new GroupName(facultyLetter, new CourseNumber(numberOfCourse), endOfNameOfGroup);
             Group group = _isuService.AddGroup(groupName);
-            _courseManager.AddGroupToCourse(group, course);
+            course.AddGroupToCourse(group);
             Student student = _isuService.AddStudent(_isuService.FindGroup(groupName), studentName);
             GsaCourse gsaCourse1 = _gsaService.AddGsaCourse(megaFaculty2, "GSA1", new CourseNumber(numberOfCourse));
             GsaCourse gsaCourse2 = _gsaService.AddGsaCourse(megaFaculty2, "GSA2", new CourseNumber(numberOfCourse));

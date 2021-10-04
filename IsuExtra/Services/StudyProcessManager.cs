@@ -29,9 +29,7 @@ namespace IsuExtra.Services
         public Room AddRoom(string number)
         {
             if (_allRooms.Any(room => room.Number == number))
-            {
                 throw new IsuException($"Room with number {number} already exists!");
-            }
 
             var room = new Room(number);
             _allRooms.Add(room);

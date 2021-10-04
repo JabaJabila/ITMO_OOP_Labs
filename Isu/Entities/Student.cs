@@ -6,9 +6,7 @@ namespace Isu.Entities
     {
         internal Student(string name, int id)
         {
-            Name = name ?? throw new ArgumentNullException(
-                nameof(name),
-                $"{nameof(name)} can't be null!");
+            Name = name ?? throw new ArgumentNullException(nameof(name));
 
             Id = id;
             Group = null;
