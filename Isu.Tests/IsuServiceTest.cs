@@ -1,3 +1,6 @@
+using System.Linq;
+using Isu.DataTypes;
+using Isu.Entities;
 using Isu.Services;
 using Isu.Tools;
 using NUnit.Framework;
@@ -13,49 +16,73 @@ namespace Isu.Tests
         public void Setup()
         {
             _isuService = new IsuService(groupCapacity: 5);
-            _isuService.AddGroup("M3101");
-            _isuService.AddGroup("M3102");
-            _isuService.AddGroup("M3200");
         }
 
-        [Test]
-        public void AddStudentToGroup_StudentHasGroupAndGroupContainsStudent()
+        [TestCase("Some Dude", 1, 'M', "00")]
+        public void AddStudentToGroup_StudentHasGroupAndGroupContainsStudent(
+            string studentName, 
+            int numberOfCourse,
+            char facultyLetter,
+            string endOfNameOfGroup)
         {
-            _isuService.AddStudent(_isuService.FindGroup("M3101"), "Vasya Pupkin");
-            Assert.AreEqual(_isuService.FindStudent("Vasya Pupkin").Group, _isuService.FindGroup("M3101"));
-            Assert.IsTrue(_isuService.FindGroup("M3101").Students.Contains(_isuService.FindStudent("Vasya Pupkin")));
+            var groupName = new GroupName(facultyLetter, new CourseNumber(numberOfCourse), endOfNameOfGroup);
+            _isuService.AddGroup(groupName);
+            _isuService.AddStudent(_isuService.FindGroup(groupName), studentName);
+            Assert.AreEqual(groupName.Name, _isuService.FindStudent(studentName).Group.GroupName.Name);
+            Assert.IsTrue(_isuService.FindGroup(groupName).Students.Contains(_isuService.FindStudent(studentName)));
         }
 
-        [Test]
-        public void ReachMaxStudentPerGroup_ThrowException()
+        [TestCase(1, 'M', "00")]
+        public void ReachMaxStudentPerGroup_ThrowException(
+            int courseNumber,
+            char facultyLetter,
+            string endOfNameOfGroup)
         {
+            var groupName = new GroupName(facultyLetter, new CourseNumber(courseNumber), "00");
+            _isuService.AddGroup(groupName);
+            _isuService.AddStudent(_isuService.FindGroup(groupName), "Student1");
+            _isuService.AddStudent(_isuService.FindGroup(groupName), "Student2");
+            _isuService.AddStudent(_isuService.FindGroup(groupName), "Student3");
+            _isuService.AddStudent(_isuService.FindGroup(groupName), "Student4");
+            _isuService.AddStudent(_isuService.FindGroup(groupName), "Student5");
+
             Assert.Throws<IsuException>(() =>
             {
-                _isuService.AddStudent(_isuService.FindGroup("M3200"), "Andreev Artem");
-                _isuService.AddStudent(_isuService.FindGroup("M3200"), "Georgy Kruglov");
-                _isuService.AddStudent(_isuService.FindGroup("M3200"), "Mihail Kutuzov");
-                _isuService.AddStudent(_isuService.FindGroup("M3200"), "Saratovcev Edgar");
-                _isuService.AddStudent(_isuService.FindGroup("M3200"), "Rakhmankulov Aedgar");
-                _isuService.AddStudent(_isuService.FindGroup("M3200"), "Ivan Evtushenko");
+                _isuService.AddStudent(_isuService.FindGroup(groupName), "Student6");
             });
         }
 
-        [Test]
-        public void CreateGroupWithInvalidName_ThrowException()
+        [TestCase('A', 1, "0")]
+        [TestCase('B', 2, "a")]
+        public void CreateGroupWithInvalidName_ThrowException(
+            char facultyLetter, 
+            int numberOfCourse, 
+            string endOfNameOfGroup)
         {
             Assert.Throws<IsuException>(() =>
             {
-                _isuService.AddGroup("M30aa");
+                var groupName = new GroupName(facultyLetter, new CourseNumber(numberOfCourse), endOfNameOfGroup);
+                _isuService.AddGroup(groupName);
             });
 
         }
 
-        [Test]
-        public void TransferStudentToAnotherGroup_GroupChanged()
+        [TestCase("Vasya", 'S', 3, "01", "01c")]
+        public void TransferStudentToAnotherGroup_GroupChanged(
+            string studentName,
+            char facultyLetter, 
+            int numberOfCourse, 
+            string endOfNameOfGroup1,
+            string endOfNameOfGroup2)
         {
-            _isuService.AddStudent(_isuService.FindGroup("M3101"), "Noname Student");
-            _isuService.ChangeStudentGroup(_isuService.FindStudent("Noname Student"), _isuService.FindGroup("M3102"));
-            Assert.AreEqual(_isuService.FindStudent("Noname Student").Group, _isuService.FindGroup("M3102"));
+            var groupName1 = new GroupName(facultyLetter, new CourseNumber(numberOfCourse), endOfNameOfGroup1);
+            var groupName2 = new GroupName(facultyLetter, new CourseNumber(numberOfCourse), endOfNameOfGroup2);
+            _isuService.AddGroup(groupName1);
+            _isuService.AddGroup(groupName2);
+            Student student = _isuService.AddStudent(_isuService.FindGroup(groupName1), studentName);
+            _isuService.ChangeStudentGroup(student, _isuService.FindGroup(groupName2));
+
+            Assert.AreEqual(groupName2.Name, _isuService.FindStudent(studentName).Group.GroupName.Name);
         }
     }
 }

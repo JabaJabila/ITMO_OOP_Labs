@@ -1,8 +1,9 @@
-﻿using Isu.Tools;
+﻿using System;
+using Isu.Tools;
 
 namespace Isu.DataTypes
 {
-    public class CourseNumber
+    public class CourseNumber : IEquatable<CourseNumber>
     {
         private const int NumOfFirstCourse = 1;
         private const int NumOfLastCourse = 4;
@@ -14,5 +15,21 @@ namespace Isu.DataTypes
         }
 
         public int Number { get; }
+
+        public bool Equals(CourseNumber other)
+        {
+            return other != null
+                   && Number == other.Number;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is CourseNumber courseNumber && Equals(courseNumber);
+        }
+
+        public override int GetHashCode()
+        {
+            return Number;
+        }
     }
 }
