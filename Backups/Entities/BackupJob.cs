@@ -58,14 +58,15 @@ namespace Backups.Entities
                 throw new BackupException($"{jobObject.FullName} not in this Backup Job!");
         }
 
-        public void CreateRestorePoint()
+        public void CreateRestorePoint(DateTime? creationTime = null)
         {
             IEnumerable<string> storagePaths = _algorithm.CreateStorages(
                 Repository,
                 JobObjects.Select(jobObject => jobObject.FullName).ToList(),
                 Id);
 
-            Backup.AddRestorePoint(new RestorePoint(storagePaths.Select(path => new Storage(path))));
+            Backup.AddRestorePoint(
+                new RestorePoint(storagePaths.Select(path => new Storage(path)), creationTime));
         }
 
         public void DeleteRestorePoint(RestorePoint restorePoint)

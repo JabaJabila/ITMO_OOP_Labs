@@ -65,7 +65,7 @@ namespace Backups.Tests
 
         [TestCase("a.txt", "b.txt", "abcdef", "test\ntest")]
         [TestCase("document.docx", "table.csv", "doc test", "csv,test")]
-        public void AddJobObjectAndDelete_StoragesCreated(
+        public void AddJobObjectAndDelete_PointsAndStoragesCreated(
             string fileName,
             string fileNameToDelete,
             string file,

@@ -7,24 +7,17 @@ namespace Backups.Entities
     public class RestorePoint
     {
         private readonly List<Storage> _storages;
-        public RestorePoint(IEnumerable<Storage> storages)
+        public RestorePoint(IEnumerable<Storage> storages, DateTime? dateTime = null)
         {
             _storages = storages.ToList();
-            CreationTime = DateTime.Now;
+            CreationTime = dateTime ?? DateTime.Now;
             Id = Guid.NewGuid();
         }
 
-        public RestorePoint(Storage storage)
+        public RestorePoint(Storage storage, DateTime? dateTime = null)
         {
             _storages = new List<Storage>(new[] { storage });
-            CreationTime = DateTime.Now;
-            Id = Guid.NewGuid();
-        }
-
-        public RestorePoint(Storage storage, DateTime dateTime)
-        {
-            _storages = new List<Storage>(new[] { storage });
-            CreationTime = dateTime;
+            CreationTime = dateTime ?? DateTime.Now;
             Id = Guid.NewGuid();
         }
 
