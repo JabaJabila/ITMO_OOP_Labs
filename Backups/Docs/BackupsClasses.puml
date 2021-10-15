@@ -1,0 +1,75 @@
+﻿@startuml
+'https://plantuml.com/class-diagram
+
+package Backups
+{
+
+    package Entities
+    {
+        class BackupJob
+        {
+
+        }
+        
+        class Backup
+        {
+        
+        }
+        
+        class JobObject 
+        {
+        
+        }
+        
+        class RestorePoint
+        {
+        
+        }
+        
+        class Storage
+        {
+        
+        }
+        
+        class LocalRepository
+        {
+        }
+
+        BackupJob "1" o-- "many" JobObject
+        BackupJob *-- Backup
+        Backup "1" *-- "many" RestorePoint
+        RestorePoint "1" o-- "many" Storage
+    }
+    package Algorithms
+    {   
+        class SingleStorageAlgorithm 
+        {
+        }
+        
+        class SplitStoragesAlgorithm
+        {
+        }
+    }
+
+    package Abstractions
+    {
+        interface IRestorePointCreationAlgorithm
+        {
+        }
+                
+        interface IRepository
+        {
+        }
+        
+        
+        
+        IRepository <|.. LocalRepository
+        BackupJob o-- IRepository
+        IRestorePointCreationAlgorithm <|.. SingleStorageAlgorithm
+        IRestorePointCreationAlgorithm <|.. SplitStoragesAlgorithm
+        BackupJob o-- IRestorePointCreationAlgorithm
+    }
+
+}
+
+@enduml
