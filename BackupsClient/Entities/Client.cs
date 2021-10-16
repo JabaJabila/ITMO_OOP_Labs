@@ -11,16 +11,15 @@ namespace BackupsClient.Entities
             Address = address ?? throw new ArgumentNullException(nameof(address));
             Port = port;
         }
+        
+        public string Address { get; }
+        public int Port { get; }
+        public NetworkStream NetworkStream { get; private set; }
 
         public void Connect()
         {
             _client = new TcpClient(Address, Port);
             NetworkStream = _client.GetStream();
-        }
-        
-        public string Address { get; }
-        public int Port { get; }
-        public NetworkStream NetworkStream { get; private set; 
         }
 
         public void Dispose()
