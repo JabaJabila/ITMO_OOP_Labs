@@ -3,7 +3,6 @@
 
 package Backups
 {
-
     package Entities
     {
         class BackupJob
@@ -30,18 +29,14 @@ package Backups
         {
         
         }
-        
-        class LocalRepository
-        {
-        }
-
-        BackupJob "1" o-- "many" JobObject
-        BackupJob *-- Backup
-        Backup "1" *-- "many" RestorePoint
-        RestorePoint "1" o-- "many" Storage
     }
+    
     package Algorithms
     {   
+        interface IStorageCreationAlgorithm
+        {
+        }
+        
         class SingleStorageAlgorithm 
         {
         }
@@ -50,26 +45,56 @@ package Backups
         {
         }
     }
-
-    package Abstractions
+    
+    package Repository
     {
-        interface IRestorePointCreationAlgorithm
-        {
-        }
-                
         interface IRepository
         {
         }
         
+        interface ICompressor
+        {
+        }
         
+        class LocalFilesRepository
+        {
+        }
         
-        IRepository <|.. LocalRepository
-        BackupJob o-- IRepository
-        IRestorePointCreationAlgorithm <|.. SingleStorageAlgorithm
-        IRestorePointCreationAlgorithm <|.. SplitStoragesAlgorithm
-        BackupJob o-- IRestorePointCreationAlgorithm
+        class LocalMemoryRepository
+        {
+        }
+        
+        class ZipArchiveCompressor
+        {
+        }
     }
 
+        
+    BackupJob "1" o-- "0..n" JobObject: contains
+    BackupJob "1" *-- "1" Backup: creates&contains
+    BackupJob "1" ..> "1" RestorePoint: creates
+    BackupJob "1" ..> "1" Storage: creates
+    BackupJob "1" o-- "1" IRepository: contains&uses
+    BackupJob "1" o-- "1" IStorageCreationAlgorithm: contains&uses
+    Backup "1" *-- "0..n" RestorePoint: comprises
+    RestorePoint "1" *-- "0..n" Storage: comprises
+    
+    IRepository "1" <.. "1" IStorageCreationAlgorithm: uses
+    IRepository <|.. LocalFilesRepository: implements
+    IRepository <|.. LocalMemoryRepository: implements
+    ICompressor <|.. ZipArchiveCompressor: implements
+    LocalFilesRepository "1" o-- "1" ICompressor: contains&uses
+    
+    IStorageCreationAlgorithm <|.. SingleStorageAlgorithm: implements
+    IStorageCreationAlgorithm <|.. SplitStoragesAlgorithm: implements 
+}
+
+package BackupsClient
+{
+}
+
+package BackupsServer
+{
 }
 
 @enduml

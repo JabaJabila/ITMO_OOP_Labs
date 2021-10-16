@@ -47,9 +47,9 @@ namespace Backups.Repository
             return storagePath;
         }
 
-        public void DeleteStorages(List<string> storagesPaths)
+        public void DeleteStorages(List<string> storagesNames)
         {
-            storagesPaths.ForEach(path => _memoryRepository.Remove(path));
+            storagesNames.ForEach(path => _memoryRepository.Remove(path));
         }
 
         public List<string> ReadFromStorage(string storagePath)

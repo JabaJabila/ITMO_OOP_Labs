@@ -9,6 +9,6 @@ namespace Backups.Repository
         bool CheckIfJobObjectExists(string fullName);
         string CreateStorage(List<string> jobObjectsPaths, Guid backupJobId, Guid storageId);
         string CreateStorage(string jobObjectPath, Guid backupJobId, Guid storageId);
-        void DeleteStorages(List<string> storagesPaths);
+        void DeleteStorages(List<string> storagesNames);
     }
 }

@@ -58,9 +58,9 @@ namespace Backups.Repository
             return storagePath;
         }
 
-        public void DeleteStorages(List<string> storagesPaths)
+        public void DeleteStorages(List<string> storagesNames)
         {
-            storagesPaths.ForEach(File.Delete);
+            storagesNames.ForEach(File.Delete);
         }
     }
 }
