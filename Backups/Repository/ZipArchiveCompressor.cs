@@ -12,10 +12,9 @@ namespace Backups.Repository
             _compressionLevel = compressionLevel;
         }
 
-        public void Compress(string storagePath, string jobObjectPath)
+        public void Compress(Stream stream, string jobObjectPath)
         {
-            using var zipToOpen = new FileStream(storagePath, FileMode.OpenOrCreate);
-            using var archive = new ZipArchive(zipToOpen, ZipArchiveMode.Update);
+            using var archive = new ZipArchive(stream, ZipArchiveMode.Update);
             archive.CreateEntryFromFile(
                 jobObjectPath,
                 Path.GetFileName(jobObjectPath),

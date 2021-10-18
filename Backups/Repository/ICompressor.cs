@@ -1,7 +1,9 @@
-﻿namespace Backups.Repository
+﻿using System.IO;
+
+namespace Backups.Repository
 {
     public interface ICompressor
     {
-        void Compress(string storagePath, string jobObjectPath);
+        void Compress(Stream stream, string jobObjectPath);
     }
 }

@@ -4,7 +4,7 @@ using System.IO;
 
 namespace Backups.Repository
 {
-    public class LocalFilesRepository : IRepository
+    public class LocalFilesRepository : IRepositoryWithArchivator
     {
         private readonly string _storageFileExtension;
         private readonly ICompressor _compressor;
@@ -38,7 +38,7 @@ namespace Backups.Repository
                 backupJobId.ToString(),
                 storageId + _storageFileExtension);
 
-            jobObjectsPaths.ForEach(jobObjectPath => _compressor.Compress(storagePath, jobObjectPath));
+            jobObjectsPaths.ForEach(jobObjectPath => SaveInArchive(storagePath, jobObjectPath));
 
             return storagePath;
         }
@@ -53,7 +53,7 @@ namespace Backups.Repository
                 backupJobId.ToString(),
                 storageId + _storageFileExtension);
 
-            _compressor.Compress(storagePath, jobObjectPath);
+            SaveInArchive(storagePath, jobObjectPath);
 
             return storagePath;
         }
@@ -61,6 +61,12 @@ namespace Backups.Repository
         public void DeleteStorages(List<string> storagesNames)
         {
             storagesNames.ForEach(File.Delete);
+        }
+
+        public void SaveInArchive(string storagePath, string jobObjectPath)
+        {
+            var archiveStream = new FileStream(storagePath, FileMode.OpenOrCreate);
+            _compressor.Compress(archiveStream, jobObjectPath);
         }
     }
 }

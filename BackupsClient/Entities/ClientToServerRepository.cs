@@ -7,7 +7,7 @@ using BackupsServer.DataTypes;
 
 namespace BackupsClient.Entities
 {
-    public class ClientToServerRepository : IRepository
+    public class ClientToServerRepository : IRepositoryWithArchivator
     {
         private readonly string _storageFileExtension;
         private readonly ICompressor _compressor;
@@ -49,7 +49,7 @@ namespace BackupsClient.Entities
                 storageId + _storageFileExtension);
 
             _client.Connect();
-            jobObjectsPaths.ForEach(jobObjectPath => _compressor.Compress(storagePath, jobObjectPath));
+            jobObjectsPaths.ForEach(jobObjectPath => SaveInArchive(storagePath, jobObjectPath));
             SendFile(storagePath, storageFullName);
             File.Delete(storagePath);
 
@@ -70,8 +70,7 @@ namespace BackupsClient.Entities
                 storageId + _storageFileExtension);
             
             _client.Connect();
-            
-            _compressor.Compress(storagePath, jobObjectPath);
+            SaveInArchive(storagePath, jobObjectPath);
             SendFile(storagePath, storageFullName);
             File.Delete(storagePath);
             
@@ -85,6 +84,12 @@ namespace BackupsClient.Entities
                 _client.Connect();
                 DeleteFile(storageName);
             }); 
+        }
+
+        public void SaveInArchive(string storagePath, string jobObjectPath)
+        {
+            var archiveStream = new FileStream(storagePath, FileMode.OpenOrCreate);
+            _compressor.Compress(archiveStream, jobObjectPath);
         }
 
         private void SendFile(string path, string storageName)

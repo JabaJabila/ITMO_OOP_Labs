@@ -94,9 +94,19 @@ package Backups
             void DeleteStorages(List<string> storagesNames)
         }
         
+        interface IRepositoryWithArchivator
+        {
+            void CreateBackupJobRepository(Guid backupJobId)
+            bool CheckIfJobObjectExists(string fullName)
+            string CreateStorage(List<string> jobObjectsPaths, Guid backupJobId, Guid storageId)
+            string CreateStorage(string jobObjectPath, Guid backupJobId, Guid storageId)
+            void DeleteStorages(List<string> storagesNames)
+            void SaveInArchive(string storagePath, string jobObjectPath)
+        }
+        
         interface ICompressor
         {
-            void Compress(string storagePath, string jobObjectPath)
+            void Compress(Stream stream, string jobObjectPath)
         }
         
         class LocalFilesRepository
@@ -111,6 +121,7 @@ package Backups
             + string CreateStorage(List<string> jobObjectsPaths, Guid backupJobId, Guid storageId)
             + string CreateStorage(string jobObjectPath, Guid backupJobId, Guid storageId)
             + void DeleteStorages(List<string> storagesNames)
+            + void SaveInArchive(string storagePath, string jobObjectPath)
         }
         
         class LocalMemoryRepository
@@ -131,7 +142,7 @@ package Backups
             - CompressionLevel _compressionLevel
             --
             + ZipArchiveCompressor(CompressionLevel compressionLevel)
-            + void Compress(string storagePath, string jobObjectPath)
+            + void Compress(Stream stream, string jobObjectPath)
         }
     }
 
@@ -146,7 +157,8 @@ package Backups
     RestorePoint "1" *-- "0..n" Storage: comprises
     
     IRepository "1" <.. "1" IStorageCreationAlgorithm: uses
-    IRepository <|.. LocalFilesRepository: implements
+    IRepository <|-- IRepositoryWithArchivator: inherits 
+    IRepositoryWithArchivator <|.. LocalFilesRepository: implements
     IRepository <|.. LocalMemoryRepository: implements
     ICompressor <|.. ZipArchiveCompressor: implements
     LocalFilesRepository "1" o-- "1" ICompressor: contains&uses
@@ -213,6 +225,7 @@ package BackupsClient
             + bool CheckIfJobObjectExists(string fullName)
             + string CreateStorage(List<string> jobObjectsPaths, Guid backupJobId, Guid storageId)
             + string CreateStorage(string jobObjectPath, Guid backupJobId, Guid storageId)
+            + void SaveInArchive(string storagePath, string jobObjectPath)
             + void DeleteStorages(List<string> storagesNames)
             - void SendFile(string path, string storageName, NetworkStream netStream)
             - void CreateDirectory(string directoryName, NetworkStream netStream)
@@ -221,7 +234,7 @@ package BackupsClient
     }
     
     Client "1" x--> "1" Server : connects
-    IRepository <|.. ClientToServerRepository : implements
+    IRepositoryWithArchivator <|.. ClientToServerRepository : implements
     ClientToServerRepository "1" o-- "1" ICompressor : contains&uses
     ClientToServerRepository "1" x--> "1" Server : sends_data
     ClientToServerRepository "1" ..> ActionOption : uses
