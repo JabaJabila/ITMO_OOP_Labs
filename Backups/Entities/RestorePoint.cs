@@ -7,7 +7,7 @@ namespace Backups.Entities
     public class RestorePoint
     {
         private readonly List<Storage> _storages;
-        public RestorePoint(IEnumerable<Storage> storages, DateTime? dateTime = null)
+        public RestorePoint(IReadOnlyCollection<Storage> storages, DateTime? dateTime = null)
         {
             _storages = storages.ToList();
             CreationTime = dateTime ?? DateTime.Now;

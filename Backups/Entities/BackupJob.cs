@@ -11,19 +11,20 @@ namespace Backups.Entities
     {
         private readonly IStorageCreationAlgorithm _algorithm;
         private readonly List<JobObject> _jobObjects;
+        private readonly IRepository _repository;
 
         public BackupJob(
             IRepository repository,
             IStorageCreationAlgorithm algorithm,
             IReadOnlyCollection<JobObject> jobObjects = null)
         {
-            Repository = repository ?? throw new ArgumentNullException(nameof(repository));
+            _repository = repository ?? throw new ArgumentNullException(nameof(repository));
             _algorithm = algorithm ?? throw new ArgumentNullException(nameof(algorithm));
             Id = Guid.NewGuid();
-            Repository.CreateBackupJobRepository(Id);
+            _repository.CreateBackupJobRepository(Id);
             _jobObjects = new List<JobObject>();
 
-            JobObject invalidJobObject = jobObjects?.FirstOrDefault(jobObject => Repository
+            JobObject invalidJobObject = jobObjects?.FirstOrDefault(jobObject => _repository
                 .CheckIfJobObjectExists(jobObject.FullName));
 
             if (invalidJobObject != null)
@@ -37,13 +38,12 @@ namespace Backups.Entities
         }
 
         public Guid Id { get; }
-        public IRepository Repository { get; }
         public IReadOnlyCollection<JobObject> JobObjects => _jobObjects;
         public Backup Backup { get; }
 
         public void AddJobObject(JobObject jobObject)
         {
-            if (!Repository.CheckIfJobObjectExists(jobObject.FullName))
+            if (!_repository.CheckIfJobObjectExists(jobObject.FullName))
                 throw new BackupException($"Job object {jobObject.FullName} doesn't exist!");
 
             if (_jobObjects.Contains(jobObject))
@@ -60,20 +60,20 @@ namespace Backups.Entities
 
         public void CreateRestorePoint(DateTime? creationTime = null)
         {
-            IEnumerable<string> storagePaths = _algorithm.CreateStorages(
-                Repository,
+            IReadOnlyCollection<string> storagePaths = _algorithm.CreateStorages(
+                _repository,
                 JobObjects.Select(jobObject => jobObject.FullName).ToList(),
                 Id);
 
             Backup.AddRestorePoint(
-                new RestorePoint(storagePaths.Select(path => new Storage(path)), creationTime));
+                new RestorePoint(storagePaths.Select(path => new Storage(path)).ToList(), creationTime));
         }
 
         public void DeleteRestorePoint(RestorePoint restorePoint)
         {
             if (Backup.DeleteRestorePoint(restorePoint))
             {
-                Repository.DeleteStorages(restorePoint.Storages.Select(storage => storage.FullName).ToList());
+                _repository.DeleteStorages(restorePoint.Storages.Select(storage => storage.FullName).ToList());
             }
         }
     }

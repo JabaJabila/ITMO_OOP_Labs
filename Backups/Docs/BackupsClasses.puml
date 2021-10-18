@@ -9,8 +9,8 @@ package Backups
         {
             - IStorageCreationAlgorithm _algorithm
             - List<JobObject> _jobObjects
+            - IRepository _repository
             + Guid Id { get; }
-            + IRepository Repository { get; }
             + IReadOnlyCollection<JobObject> JobObjects => _jobObjects;
             + Backup Backup { get; }
         --
@@ -48,7 +48,7 @@ package Backups
             + DateTime CreationTime { get; }
             + Guid Id { get; }
             --
-            + RestorePoint(IEnumerable<Storage> storages, DateTime? dateTime)
+            + RestorePoint(IReadOnlyCollection<Storage> storages, DateTime? dateTime)
             + RestorePoint(Storage storage, DateTime? dateTime)
         }
         
@@ -65,21 +65,21 @@ package Backups
         interface IStorageCreationAlgorithm
         {
             --
-            IEnumerable<string> CreateStorages(IRepository repository, List<string> jobObjectPaths, Guid backupJobId)
+            IReadOnlyCollection<string> CreateStorages(IRepository repository, List<string> jobObjectPaths, Guid backupJobId)
         }
         
         class SingleStorageAlgorithm
         {
             --
             + SingleStorageAlgorithm()
-            + IEnumerable<string> CreateStorages(IRepository repository, List<string> jobObjectPaths, Guid backupJobId)
+            + IReadOnlyCollection<string> CreateStorages(IRepository repository, List<string> jobObjectPaths, Guid backupJobId)
         }
         
         class SplitStoragesAlgorithm
         {
             --
             + SplitStoragesAlgorithm()
-            + IEnumerable<string> CreateStorages(IRepository repository, List<string> jobObjectPaths, Guid backupJobId)
+            + IReadOnlyCollection<string> CreateStorages(IRepository repository, List<string> jobObjectPaths, Guid backupJobId)
         }
     }
     
@@ -155,61 +155,6 @@ package Backups
     IStorageCreationAlgorithm <|.. SplitStoragesAlgorithm: implements 
 }
 
-package BackupsClient
-{
-    package BackupsClient.Entities
-    {
-        class Client
-        {
-            + string Address { get; }
-            + int Port { get; }
-            + NetworkStream NetworkStream { get; private set; }
-            --
-            + Client(string address, int port)
-            + void Connect()
-            + void Dispose()
-        }
-        
-        class ClientToServerRepository
-        {
-            - string _storageFileExtension;
-            - ICompressor _compressor;
-            - Client _client;
-            - IBackupsServerCommandSender _commandSender;
-            --
-            + ClientToServerRepository(ICompressor compressor, string storageFileExtension, Client client, IBackupsServerCommandSender commandSender)
-            + void CreateBackupJobRepository(Guid backupJobId)
-            + bool CheckIfJobObjectExists(string fullName)
-            + string CreateStorage(List<string> jobObjectsPaths, Guid backupJobId, Guid storageId)
-            + string CreateStorage(string jobObjectPath, Guid backupJobId, Guid storageId)
-            + void DeleteStorages(List<string> storagesNames)
-        }
-        
-        interface IBackupsServerCommandSender
-        {
-            --
-            void SendFile(string path, string storageName, NetworkStream netStream)
-            void CreateDirectory(string directoryName, NetworkStream netStream)
-            void DeleteFile(string storageName, NetworkStream netStream)
-        }
-        
-        class CommandToServerSender
-        {
-            --
-            + CommandToServerSender()
-            + void SendFile(string path, string storageName, NetworkStream netStream)
-            + void CreateDirectory(string directoryName, NetworkStream netStream)
-            + void DeleteFile(string storageName, NetworkStream netStream)
-        }
-    }
-    
-    IRepository <|.. ClientToServerRepository : implements
-    ClientToServerRepository "1" o-- "1" ICompressor : contains&uses
-    ClientToServerRepository "1" o-- "1" IBackupsServerCommandSender : contains&uses
-    ClientToServerRepository "1" o-- "1" Client : contains&uses
-    IBackupsServerCommandSender <|.. CommandToServerSender : implements
-}
-
 package BackupsServer
 {
     class Server 
@@ -240,10 +185,47 @@ package BackupsServer
     }
     
     Server "1" ..> "1" ActionOption : uses
-    IBackupsServerCommandSender "1" ..> Client : uses_NetworkStream
-    CommandToServerSender "1" ..> "1" ActionOption : uses
+}
+
+package BackupsClient
+{
+    package BackupsClient.Entities
+    {
+        class Client
+        {
+            + string Address { get; }
+            + int Port { get; }
+            + NetworkStream NetworkStream { get; private set; }
+            --
+            + Client(string address, int port)
+            + void Connect()
+            + void Dispose()
+        }
+        
+        class ClientToServerRepository
+        {
+            - string _storageFileExtension;
+            - ICompressor _compressor;
+            - Client _client;
+            --
+            + ClientToServerRepository(ICompressor compressor, string storageFileExtension, Client client)
+            + void CreateBackupJobRepository(Guid backupJobId)
+            + bool CheckIfJobObjectExists(string fullName)
+            + string CreateStorage(List<string> jobObjectsPaths, Guid backupJobId, Guid storageId)
+            + string CreateStorage(string jobObjectPath, Guid backupJobId, Guid storageId)
+            + void DeleteStorages(List<string> storagesNames)
+            - void SendFile(string path, string storageName, NetworkStream netStream)
+            - void CreateDirectory(string directoryName, NetworkStream netStream)
+            - void DeleteFile(string storageName, NetworkStream netStream)
+        }
+    }
+    
     Client "1" x--> "1" Server : connects
-    CommandToServerSender "1" x--> "1" Server : sends_data
+    IRepository <|.. ClientToServerRepository : implements
+    ClientToServerRepository "1" o-- "1" ICompressor : contains&uses
+    ClientToServerRepository "1" x--> "1" Server : sends_data
+    ClientToServerRepository "1" ..> ActionOption : uses
+    ClientToServerRepository "1" o-- "1" Client : contains&uses
 }
 
 @enduml

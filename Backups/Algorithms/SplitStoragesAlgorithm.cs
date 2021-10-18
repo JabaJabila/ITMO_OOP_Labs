@@ -8,7 +8,7 @@ namespace Backups.Algorithms
 {
     public class SplitStoragesAlgorithm : IStorageCreationAlgorithm
     {
-        public IEnumerable<string> CreateStorages(
+        public IReadOnlyCollection<string> CreateStorages(
             IRepository repository,
             List<string> jobObjectPaths,
             Guid backupJobId)
@@ -21,7 +21,8 @@ namespace Backups.Algorithms
 
             return jobObjectPaths
                 .Select(jobObjectPath =>
-                    repository.CreateStorage(jobObjectPath, backupJobId, Guid.NewGuid()));
+                    repository.CreateStorage(jobObjectPath, backupJobId, Guid.NewGuid()))
+                .ToList();
         }
     }
 }

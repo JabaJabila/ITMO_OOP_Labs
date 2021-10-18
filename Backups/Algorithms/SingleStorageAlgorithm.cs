@@ -7,7 +7,7 @@ namespace Backups.Algorithms
 {
     public class SingleStorageAlgorithm : IStorageCreationAlgorithm
     {
-        public IEnumerable<string> CreateStorages(IRepository repository, List<string> jobObjectPaths, Guid backupJobId)
+        public IReadOnlyCollection<string> CreateStorages(IRepository repository, List<string> jobObjectPaths, Guid backupJobId)
         {
             if (repository == null)
                 throw new ArgumentNullException(nameof(repository));

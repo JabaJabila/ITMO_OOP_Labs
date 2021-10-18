@@ -6,6 +6,6 @@ namespace Backups.Algorithms
 {
     public interface IStorageCreationAlgorithm
     {
-        IEnumerable<string> CreateStorages(IRepository repository, List<string> jobObjectPaths, Guid backupJobId);
+        IReadOnlyCollection<string> CreateStorages(IRepository repository, List<string> jobObjectPaths, Guid backupJobId);
     }
 }

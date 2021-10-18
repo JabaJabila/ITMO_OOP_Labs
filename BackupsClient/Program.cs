@@ -14,8 +14,7 @@ namespace BackupsClient
             var repository = new ClientToServerRepository(
                 new ZipArchiveCompressor(), 
                 ".zip",
-                client,
-                new CommandToServerSender());
+                client);
 
             var backupJob1 = new BackupJob(repository, new SingleStorageAlgorithm());
             var obj1 = new JobObject(@"d:\proj\a.txt");
