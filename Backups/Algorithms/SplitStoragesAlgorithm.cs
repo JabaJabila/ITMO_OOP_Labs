@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Backups.Entities;
 using Backups.Repository;
 using Backups.Tools;
 
@@ -8,7 +9,7 @@ namespace Backups.Algorithms
 {
     public class SplitStoragesAlgorithm : IStorageCreationAlgorithm
     {
-        public IReadOnlyCollection<string> CreateStorages(
+        public IReadOnlyCollection<Storage> CreateStorages(
             IRepository repository,
             List<string> jobObjectPaths,
             Guid backupJobId)
@@ -21,7 +22,7 @@ namespace Backups.Algorithms
 
             return jobObjectPaths
                 .Select(jobObjectPath =>
-                    repository.CreateStorage(jobObjectPath, backupJobId, Guid.NewGuid()))
+                    new Storage(repository.CreateStorage(jobObjectPath, backupJobId, Guid.NewGuid())))
                 .ToList();
         }
     }

@@ -7,7 +7,7 @@ using BackupsServer.DataTypes;
 
 namespace BackupsServer
 {
-    public class Server
+    public class Server : IDisposable
     {
         private readonly TcpListener _listener;
         private TcpClient _client;
@@ -101,9 +101,11 @@ namespace BackupsServer
             File.Delete(Path.Combine(DirectoryPath, location));
         }
 
-        ~Server()
+        public void Dispose()
         {
             _listener?.Stop();
+            _client?.Dispose();
+            NetworkStream?.Dispose();
         }
     }
 }

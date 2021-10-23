@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Backups.Entities;
 using Backups.Repository;
 using Backups.Tools;
 
@@ -7,7 +8,7 @@ namespace Backups.Algorithms
 {
     public class SingleStorageAlgorithm : IStorageCreationAlgorithm
     {
-        public IReadOnlyCollection<string> CreateStorages(IRepository repository, List<string> jobObjectPaths, Guid backupJobId)
+        public IReadOnlyCollection<Storage> CreateStorages(IRepository repository, List<string> jobObjectPaths, Guid backupJobId)
         {
             if (repository == null)
                 throw new ArgumentNullException(nameof(repository));
@@ -17,13 +18,13 @@ namespace Backups.Algorithms
 
             var storageId = Guid.NewGuid();
 
-            var storagePathList =
-                new List<string>(new[]
+            var storageList =
+                new List<Storage>(new[]
                     {
-                        repository.CreateStorage(jobObjectPaths, backupJobId, storageId),
+                        new Storage(repository.CreateStorage(jobObjectPaths, backupJobId, storageId)),
                     });
 
-            return storagePathList;
+            return storageList;
         }
     }
 }

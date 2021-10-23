@@ -150,7 +150,7 @@ package Backups
     BackupJob "1" o-- "0..n" JobObject: contains
     BackupJob "1" *-- "1" Backup: creates&contains
     BackupJob "1" ..> "1" RestorePoint: creates
-    BackupJob "1" ..> "1" Storage: creates
+    IStorageCreationAlgorithm "1" ..> "1" Storage: creates
     BackupJob "1" o-- "1" IRepository: contains&uses
     BackupJob "1" o-- "1" IStorageCreationAlgorithm: contains&uses
     Backup "1" *-- "0..n" RestorePoint: comprises

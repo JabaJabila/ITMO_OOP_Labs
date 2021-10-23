@@ -24,7 +24,7 @@ namespace Backups.Entities
 
         public override int GetHashCode()
         {
-            return FullName != null ? FullName.GetHashCode() : 0;
+            return FullName.GetHashCode();
         }
     }
 }

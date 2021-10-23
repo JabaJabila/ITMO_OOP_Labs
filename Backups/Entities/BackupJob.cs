@@ -60,13 +60,13 @@ namespace Backups.Entities
 
         public void CreateRestorePoint(DateTime? creationTime = null)
         {
-            IReadOnlyCollection<string> storagePaths = _algorithm.CreateStorages(
+            IReadOnlyCollection<Storage> storages = _algorithm.CreateStorages(
                 _repository,
                 JobObjects.Select(jobObject => jobObject.FullName).ToList(),
                 Id);
 
             Backup.AddRestorePoint(
-                new RestorePoint(storagePaths.Select(path => new Storage(path)).ToList(), creationTime));
+                new RestorePoint(storages, creationTime));
         }
 
         public void DeleteRestorePoint(RestorePoint restorePoint)
