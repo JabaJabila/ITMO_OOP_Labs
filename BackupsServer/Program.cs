@@ -4,7 +4,7 @@
     {
         public static void Main()
         {
-            var server = new Server("127.0.0.1", 8888, @"d:\ServerStuff");
+            using var server = new Server("127.0.0.1", 8888, @"d:\ServerStuff");
             while (true)
             {
                 server.Work();

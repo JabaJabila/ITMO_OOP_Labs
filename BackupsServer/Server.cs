@@ -7,7 +7,7 @@ using BackupsServer.DataTypes;
 
 namespace BackupsServer
 {
-    public class Server : IDisposable
+    public sealed class Server : IDisposable
     {
         private readonly TcpListener _listener;
         private TcpClient _client;
