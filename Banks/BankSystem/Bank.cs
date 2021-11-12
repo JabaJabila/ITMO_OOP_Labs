@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using Banks.Accounts;
 using Banks.Clients;
 using Banks.Exceptions;
-using Banks.Transactions;
 using Microsoft.EntityFrameworkCore;
 
 namespace Banks.BankSystem
@@ -16,13 +16,13 @@ namespace Banks.BankSystem
         private readonly List<Client> _onCreditAccountChangesSubscribers;
         private readonly List<Client> _onDebitAccountChangesSubscribers;
         private readonly List<Client> _onDepositAccountChangesSubscribers;
+        private DepositAccountConfig _depositAccountConfig;
 
         internal Bank(
             string name,
             DebitAccountConfig debitAccountConfig,
             DepositAccountConfig depositAccountConfig,
-            CreditAccountConfig creditAccountConfig,
-            TransactionHistory transactionHistory)
+            CreditAccountConfig creditAccountConfig)
         {
             Name = name ?? throw new ArgumentNullException(nameof(name));
             DebitAccountConfig = debitAccountConfig
@@ -31,7 +31,6 @@ namespace Banks.BankSystem
                                    ?? throw new ArgumentNullException(nameof(depositAccountConfig));
             CreditAccountConfig = creditAccountConfig
                                   ?? throw new ArgumentNullException(nameof(creditAccountConfig));
-            DepositAccountConfig.NotifyDepositAccountConfigChanges += DepositAccountChangesNotify;
 
             _clients = new List<Client>();
             _accounts = new List<Account>();
@@ -53,7 +52,19 @@ namespace Banks.BankSystem
         [Required]
         public string Name { get; private init; }
         public DebitAccountConfig DebitAccountConfig { get; private set; }
-        public DepositAccountConfig DepositAccountConfig { get; private set; }
+
+        public DepositAccountConfig DepositAccountConfig
+        {
+            get => _depositAccountConfig;
+            private set
+            {
+                if (_depositAccountConfig != null)
+                    UnsubscribeFromDepositAccountConfigEvents();
+                _depositAccountConfig = value;
+                _depositAccountConfig.NotifyDepositAccountConfigChanges += DepositAccountChangesNotify;
+            }
+        }
+
         public CreditAccountConfig CreditAccountConfig { get; private set; }
         [BackingField(nameof(_clients))]
         public IReadOnlyList<Client> Clients => _clients;
@@ -65,6 +76,11 @@ namespace Banks.BankSystem
         public IReadOnlyList<Client> OnDebitAccountChangesSubscribers => _onDebitAccountChangesSubscribers;
         [BackingField(nameof(_onDepositAccountChangesSubscribers))]
         public IReadOnlyList<Client> OnDepositAccountChangesSubscribers => _onDepositAccountChangesSubscribers;
+
+        public void UnsubscribeFromDepositAccountConfigEvents()
+        {
+            DepositAccountConfig.NotifyDepositAccountConfigChanges -= DepositAccountChangesNotify;
+        }
 
         public Client AddClient(Client client)
         {
@@ -104,7 +120,6 @@ namespace Banks.BankSystem
 
             DepositAccountChangesNotify(DepositAccountConfig, config);
             DepositAccountConfig = config;
-            DepositAccountConfig.NotifyDepositAccountConfigChanges += DepositAccountChangesNotify;
         }
 
         public DebitAccount CreateDebitAccount(Client client, decimal starterBalance)
@@ -162,19 +177,22 @@ namespace Banks.BankSystem
         public void CreditAccountChangesNotify(CreditAccountConfig oldConfig, CreditAccountConfig newConfig)
         {
             _onCreditAccountChangesSubscribers
-                .ForEach(client => client.ReactOnChanges(CreditAccountConfig.GetDifference(oldConfig, newConfig)));
+                .ForEach(client => client.ReactOnChanges(
+                    CreditAccountConfig.GetDifference(oldConfig, newConfig).ToArray()));
         }
 
         public void DebitAccountChangesNotify(DebitAccountConfig oldConfig, DebitAccountConfig newConfig)
         {
             _onDebitAccountChangesSubscribers
-                .ForEach(client => client.ReactOnChanges(DebitAccountConfig.GetDifference(oldConfig, newConfig)));
+                .ForEach(client => client.ReactOnChanges(
+                    DebitAccountConfig.GetDifference(oldConfig, newConfig).ToArray()));
         }
 
         public void DepositAccountChangesNotify(DepositAccountConfig oldConfig, DepositAccountConfig newConfig)
         {
             _onDepositAccountChangesSubscribers
-                .ForEach(client => client.ReactOnChanges(DepositAccountConfig.GetDifference(oldConfig, newConfig)));
+                .ForEach(client => client.ReactOnChanges(
+                    DepositAccountConfig.GetDifference(oldConfig, newConfig).ToArray()));
         }
 
         public void DepositAccountChangesNotify(decimal balanceUpperBorder, double interestRate)

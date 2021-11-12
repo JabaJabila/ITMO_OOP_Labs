@@ -1,9 +1,7 @@
 ﻿using System;
-using Microsoft.EntityFrameworkCore;
 
 namespace Banks.BankSystem
 {
-    [Owned]
     public class DateSystem
     {
         public DateSystem(DateTime date)
@@ -19,6 +17,8 @@ namespace Banks.BankSystem
         public delegate void NewMonthHandler(DateTime date);
         public event NewDayHandler NotifyNewDay;
         public event NewMonthHandler NotifyNewMonth;
+
+        public int Id { get; private init; }
 
         public DateTime DateTime { get; private set; }
 

@@ -42,11 +42,13 @@ namespace Banks.Tests
                 new CreditAccountConfig(50, -1000, 100));
             
             var cbuilder = new Client.ClientBuilder();
-            cbuilder.AddName(clientName);
-            cbuilder.AddSurname(clientSurname);
-            cbuilder.AddAddress(clientAddress);
-            cbuilder.AddPassport(clientPassport);
-            Client client = cbuilder.GetClient();
+            cbuilder.AddName(clientName).AddSurname(clientSurname).AddAddress(clientAddress).AddPassport(clientPassport);
+            Client client = cbuilder
+                .AddName(clientName)
+                .AddSurname(clientSurname)
+                .AddAddress(clientAddress)
+                .AddPassport(clientPassport)
+                .GetClient();
             bank.AddClient(client);
             
             Assert.Contains(bank, _centralBank.Banks.ToArray());
@@ -65,9 +67,7 @@ namespace Banks.Tests
                 new CreditAccountConfig(50, -1000, 100));
             
             var cbuilder = new Client.ClientBuilder();
-            cbuilder.AddName("Name");
-            cbuilder.AddSurname("Surname");
-            Client client = cbuilder.GetClient();
+            Client client = cbuilder.AddName("Name").AddSurname("Surname").GetClient();
             bank.AddClient(client);
             DebitAccount account = bank.CreateDebitAccount(client, balance);
             _date.SkipDays(1);
@@ -91,9 +91,7 @@ namespace Banks.Tests
                 new CreditAccountConfig(commission, -1000, 100));
             
             var cbuilder = new Client.ClientBuilder();
-            cbuilder.AddName("Name");
-            cbuilder.AddSurname("Surname");
-            Client client = cbuilder.GetClient();
+            Client client = cbuilder.AddName("Name").AddSurname("Surname").GetClient();
             bank.AddClient(client);
             CreditAccount account = bank.CreateCreditAccount(client, 0);
             account.StartWithdrawTransaction(10, _centralBank.TransactionHistory);
@@ -116,11 +114,12 @@ namespace Banks.Tests
                 new CreditAccountConfig(50, -1000, 100));
             
             var cbuilder = new Client.ClientBuilder();
-            cbuilder.AddName("Name");
-            cbuilder.AddSurname("Surname");
-            cbuilder.AddAddress("Address");
-            cbuilder.AddPassport("Passport");
-            Client client = cbuilder.GetClient();
+            Client client = cbuilder
+                .AddName("Name")
+                .AddSurname("Surname")
+                .AddAddress("Address")
+                .AddPassport("Passport")
+                .GetClient();
             bank.AddClient(client);
             DepositAccount account = bank.CreateDepositAccount(
                 client,
@@ -151,23 +150,26 @@ namespace Banks.Tests
                 new CreditAccountConfig(50, -1000, 100));
             
             var cbuilder = new Client.ClientBuilder();
-            cbuilder.AddName("Name");
-            cbuilder.AddSurname("Surname");
-            cbuilder.AddAddress("Address");
-            cbuilder.AddPassport("Passport");
-            Client client = cbuilder.GetClient();
+            Client client = cbuilder
+                .AddName("Name")
+                .AddSurname("Surname")
+                .AddAddress("Address")
+                .AddPassport("Passport")
+                .GetClient();
             bank.AddClient(client);
             DepositAccount account = bank.CreateDepositAccount(
                 client,
                 100,
                 _date.DateTime.AddMonths(2));
-            client.Notify += _ => { _date.SkipDays(1); };
+            Client.NotificationHandler myHandler = _ => { _date.SkipDays(1); };
+            client.Notify += myHandler;
             bank.SubscribeOnDepositAccountChanges(client);
             Assert.Contains(bank, client.DepositAccountChangesPublishers.ToArray());
             Assert.Contains(client, bank.OnDepositAccountChangesSubscribers.ToArray());
             config.AddInterestSection(1000, newInterestRate);
             bank.ChangeDepositAccountConfig(new DepositAccountConfig(defaultInterestRate, newUntrustedLimit));
             Assert.AreEqual(DateTime.Today.AddDays(2), _date.DateTime);
+            client.Notify -= myHandler;
         }
         
         [TestCase(100, 200)]
@@ -183,15 +185,17 @@ namespace Banks.Tests
                 new CreditAccountConfig(50, -1000, untrustedLimit));
             
             var cbuilder = new Client.ClientBuilder();
-            cbuilder.AddName("Name");
-            cbuilder.AddSurname("Surname");
-            cbuilder.AddAddress("Address");
-            Client client1 = cbuilder.GetClient();
-            cbuilder.AddName("NewName");
-            cbuilder.AddSurname("NewSurname");
-            cbuilder.AddAddress("NewAddress");
-            cbuilder.AddPassport("Passport");
-            Client client2 = cbuilder.GetClient();
+            Client client1 = cbuilder
+                .AddName("Name")
+                .AddSurname("Surname")
+                .AddAddress("Address")
+                .GetClient();
+            Client client2 = cbuilder
+                .AddName("OtherName")
+                .AddSurname("OtherSurname")
+                .AddAddress("OtherAddress")
+                .AddPassport("Passport")
+                .GetClient();
             bank.AddClient(client1);
             bank.AddClient(client2);
             DebitAccount account1 = bank.CreateDebitAccount(
@@ -232,9 +236,10 @@ namespace Banks.Tests
                 new CreditAccountConfig(100, minusLimit, amount));
             
             var cbuilder = new Client.ClientBuilder();
-            cbuilder.AddName("Name");
-            cbuilder.AddSurname("Surname");
-            Client client = cbuilder.GetClient();
+            Client client = cbuilder
+                .AddName("Name")
+                .AddSurname("Surname")
+                .GetClient();
             bank.AddClient(client);
             CreditAccount account = bank.CreateCreditAccount(client, 0);
             
@@ -257,9 +262,10 @@ namespace Banks.Tests
                 new CreditAccountConfig(50, -1000, amountToSpend));
             
             var cbuilder = new Client.ClientBuilder();
-            cbuilder.AddName("Name");
-            cbuilder.AddSurname("Surname");
-            Client client = cbuilder.GetClient();
+            Client client = cbuilder
+                .AddName("Name")
+                .AddSurname("Surname")
+                .GetClient();
             bank.AddClient(client);
             DebitAccount account = bank.CreateDebitAccount(client, balance);
             WithdrawTransaction transaction = account.StartWithdrawTransaction(amountToSpend, _centralBank.TransactionHistory);

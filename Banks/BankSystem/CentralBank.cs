@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using Banks.Accounts;
 using Banks.Transactions;
 using Microsoft.EntityFrameworkCore;
@@ -10,11 +9,11 @@ namespace Banks.BankSystem
     public class CentralBank
     {
         private readonly List<Bank> _banks;
-        private readonly DateSystem _date;
+        private DateSystem _dateSystem;
 
         public CentralBank(DateSystem dateSystem)
         {
-            Date = dateSystem;
+            DateSystem = dateSystem ?? throw new ArgumentNullException(nameof(dateSystem));
             _banks = new List<Bank>();
             TransactionHistory = new TransactionHistory();
         }
@@ -31,17 +30,23 @@ namespace Banks.BankSystem
         [BackingField(nameof(_banks))]
         public IReadOnlyList<Bank> Banks => _banks;
 
-        [Required]
-        public DateSystem Date
+        public DateSystem DateSystem
         {
-            get => _date;
+            get => _dateSystem;
             private init
             {
-                _date = value ?? throw new ArgumentNullException(nameof(value));
-                _date.NotifyNewDay += NotifyToCalculateInterest;
-                _date.NotifyNewDay += NotifyChargeCommission;
-                _date.NotifyNewMonth += NotifyChargeInterest;
+                _dateSystem = value;
+                _dateSystem.NotifyNewDay += NotifyToCalculateInterest;
+                _dateSystem.NotifyNewDay += NotifyChargeCommission;
+                _dateSystem.NotifyNewMonth += NotifyChargeInterest;
             }
+        }
+
+        public void UnsubscribeFromDateTimeEvents()
+        {
+            DateSystem.NotifyNewDay -= NotifyToCalculateInterest;
+            DateSystem.NotifyNewDay -= NotifyChargeCommission;
+            DateSystem.NotifyNewMonth -= NotifyChargeInterest;
         }
 
         public Bank RegisterNewBank(
@@ -62,7 +67,7 @@ namespace Banks.BankSystem
              if (creditConfig == null)
                  throw new ArgumentNullException(nameof(creditConfig));
 
-             var bank = new Bank(name, debitConfig, depositConfig, creditConfig, TransactionHistory);
+             var bank = new Bank(name, debitConfig, depositConfig, creditConfig);
              _banks.Add(bank);
 
              return bank;

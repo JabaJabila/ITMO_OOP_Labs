@@ -52,8 +52,9 @@ namespace Banks.Clients
         [BackingField(nameof(_banks))]
         public IReadOnlyList<Bank> Banks => _banks;
 
-        public string ReactOnChanges(string changesMessage)
+        public string ReactOnChanges(params string[] changes)
         {
+            string changesMessage = string.Join("\n", changes);
             Notify?.Invoke(changesMessage);
             return changesMessage;
         }
@@ -109,15 +110,16 @@ namespace Banks.Clients
         private string _address;
         private string _passport;
 
-        public void Reset()
+        public IClientBuilder Reset()
         {
             _name = null;
             _surname = null;
             _address = null;
             _passport = null;
+            return this;
         }
 
-        public void UpdateClientAddress(Client client, string address)
+        public IClientBuilder UpdateClientAddress(Client client, string address)
         {
             if (client == null)
                 throw new ArgumentNullException(nameof(client));
@@ -126,9 +128,10 @@ namespace Banks.Clients
                 throw new ArgumentNullException(nameof(address));
 
             client.Address = address;
+            return this;
         }
 
-        public void UpdateClientPassport(Client client, string passport)
+        public IClientBuilder UpdateClientPassport(Client client, string passport)
         {
             if (client == null)
                 throw new ArgumentNullException(nameof(client));
@@ -137,26 +140,31 @@ namespace Banks.Clients
                 throw new ArgumentNullException(nameof(passport));
 
             client.Passport = passport;
+            return this;
         }
 
-        public void AddName(string name)
+        public IClientBuilder AddName(string name)
         {
             _name = name ?? throw new ArgumentNullException(nameof(name));
+            return this;
         }
 
-        public void AddSurname(string surname)
+        public IClientBuilder AddSurname(string surname)
         {
             _surname = surname ?? throw new ArgumentNullException(nameof(surname));
+            return this;
         }
 
-        public void AddAddress(string address)
+        public IClientBuilder AddAddress(string address)
         {
             _address = address ?? throw new ArgumentNullException(nameof(address));
+            return this;
         }
 
-        public void AddPassport(string passport)
+        public IClientBuilder AddPassport(string passport)
         {
             _passport = passport ?? throw new ArgumentNullException(nameof(passport));
+            return this;
         }
 
         public Client GetClient()

@@ -33,7 +33,7 @@ namespace Banks.UI
         {
             var centralBanks = _db.CentralBanks
                 .Include(cb => cb.TransactionHistory).ThenInclude(history => history.Transactions)
-                .Include(cb => cb.Date)
+                .Include(cb => cb.DateSystem)
                 .Include(cb => cb.Banks).ThenInclude(b => b.Clients)
                 .Include(cb => cb.Banks).ThenInclude(b => b.CreditAccountConfig)
                 .Include(cb => cb.Banks).ThenInclude(b => b.DebitAccountConfig)
@@ -46,7 +46,7 @@ namespace Banks.UI
 
             var ids = centralBanks.Select(cb => cb.Id.ToString()).ToList();
             var dates = centralBanks
-                .Select(cb => cb.Date.DateTime.ToString(CultureInfo.CurrentCulture))
+                .Select(cb => cb.DateSystem.DateTime.ToString(CultureInfo.CurrentCulture))
                 .ToList();
             return ids.Zip(dates, (id, date) => id + ": current date = " + date).ToList();
         }
@@ -55,6 +55,7 @@ namespace Banks.UI
         {
             _currentCentralBank = new CentralBank(new DateSystem(DateTime.Now));
             _db.CentralBanks.Add(_currentCentralBank);
+            _db.SaveChanges();
         }
 
         public void FindCentralBankById(int id)
@@ -62,6 +63,8 @@ namespace Banks.UI
             _currentCentralBank = _db.CentralBanks.FirstOrDefault(cb => cb.Id == id);
             if (_currentCentralBank == null)
                 throw new BankException($"Central bank with id={id} doesn't exists");
+            _db.Update(_currentCentralBank);
+            _db.SaveChanges();
         }
 
         public void SkipDays(int days)
@@ -69,8 +72,7 @@ namespace Banks.UI
             if (_currentCentralBank == null)
                 throw new NullReferenceException("Central bank wasn't chosen!");
 
-            _currentCentralBank.Date.SkipDays(days);
-            _db.Update(_currentCentralBank);
+            _currentCentralBank.DateSystem.SkipDays(days);
             _db.SaveChanges();
         }
 
@@ -212,10 +214,7 @@ namespace Banks.UI
         public int CreateClient(int bankId, string name, string surname)
         {
             Bank bank = GetBankById(bankId);
-            _builder.Reset();
-            _builder.AddName(name);
-            _builder.AddSurname(surname);
-            Client client = _builder.GetClient();
+            Client client = _builder.Reset().AddName(name).AddSurname(surname).GetClient();
             _db.Add(client);
             bank.AddClient(client);
             _db.SaveChanges();
@@ -250,7 +249,7 @@ namespace Banks.UI
             Account acc = bank.CreateDepositAccount(
                 client,
                 balance,
-                _currentCentralBank.Date.DateTime.AddDays(daysToSave));
+                _currentCentralBank.DateSystem.DateTime.AddDays(daysToSave));
             _db.Add(acc);
             _db.SaveChanges();
         }

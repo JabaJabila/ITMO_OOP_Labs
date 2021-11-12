@@ -1,4 +1,5 @@
-﻿using Banks.Accounts;
+﻿using System.Linq;
+using Banks.Accounts;
 using Banks.BankSystem;
 using Banks.Clients;
 using Banks.Transactions;
@@ -21,6 +22,24 @@ namespace Banks.EntityFrameworkStuff
         public DbSet<DepositAccountConfig> DepositAccountConfigs { get; set; }
         public DbSet<Account> Accounts { get; set; }
         public DbSet<TransactionHistory> TransactionHistories { get; set; }
+
+        public override int SaveChanges()
+        {
+            var deletedBanks = ChangeTracker.Entries()
+                .Where(entity => entity.Entity is Bank && entity.State == EntityState.Deleted)
+                .Select(entity => entity.Entity)
+                .ToList();
+
+            deletedBanks.ForEach(b => ((Bank)b).UnsubscribeFromDepositAccountConfigEvents());
+
+            var deletedCentralBanks = ChangeTracker.Entries()
+                .Where(entity => entity.Entity is CentralBank && entity.State == EntityState.Deleted)
+                .Select(entity => entity.Entity)
+                .ToList();
+
+            deletedCentralBanks.ForEach(cb => ((CentralBank)cb).UnsubscribeFromDateTimeEvents());
+            return base.SaveChanges();
+        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

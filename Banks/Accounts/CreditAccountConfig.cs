@@ -55,7 +55,7 @@ namespace Banks.Accounts
             }
         }
 
-        public static string GetDifference(CreditAccountConfig oldConfig, CreditAccountConfig newConfig)
+        public static IReadOnlyList<string> GetDifference(CreditAccountConfig oldConfig, CreditAccountConfig newConfig)
         {
             var changes = new List<string>();
             if (oldConfig.Commission != newConfig.Commission)
@@ -79,7 +79,7 @@ namespace Banks.Accounts
             if (changes.Count == 0)
                 throw new AccountException("No changes in config!");
 
-            return string.Join('\n', changes);
+            return changes;
         }
     }
 }

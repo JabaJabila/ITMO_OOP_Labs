@@ -82,7 +82,9 @@ namespace Banks.Accounts
             }
         }
 
-        public static string GetDifference(DepositAccountConfig oldConfig, DepositAccountConfig newConfig)
+        public static IReadOnlyList<string> GetDifference(
+            DepositAccountConfig oldConfig,
+            DepositAccountConfig newConfig)
         {
             var changes = new List<string>();
             if (oldConfig.UntrustedLimit != newConfig.UntrustedLimit)
@@ -101,10 +103,10 @@ namespace Banks.Accounts
             if (changes.Count == 0)
                 throw new AccountException("No changes in config!");
 
-            return string.Join('\n', changes);
+            return changes;
         }
 
-        public string GetAllInterestsInfo()
+        public IReadOnlyList<string> GetAllInterestsInfo()
         {
             List<string> borders = _borders
                 .ConvertAll(b => b.ToString(CultureInfo.CurrentCulture));
@@ -115,10 +117,10 @@ namespace Banks.Accounts
                 var stages = borders
                     .Zip(rates, (border, rate) => "< " + border + " - " + rate + "%").ToList();
                 stages.Add(">= " + _borders.Last() + " - " + DefaultInterestRate);
-                return string.Join("\n", stages);
+                return stages;
             }
 
-            return $"Interest rate for all amounts = {DefaultInterestRate}";
+            return new List<string>(new[] { $"Interest rate for all amounts = {DefaultInterestRate}" });
         }
 
         public void AddInterestSection(decimal balanceUpperBorder, double interestRate)

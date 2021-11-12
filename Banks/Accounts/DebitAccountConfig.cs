@@ -44,7 +44,7 @@ namespace Banks.Accounts
             }
         }
 
-        public static string GetDifference(DebitAccountConfig oldConfig, DebitAccountConfig newConfig)
+        public static IReadOnlyList<string> GetDifference(DebitAccountConfig oldConfig, DebitAccountConfig newConfig)
         {
             var changes = new List<string>();
             if (Math.Abs(oldConfig.InterestRate - newConfig.InterestRate) > Tolerance)
@@ -62,7 +62,7 @@ namespace Banks.Accounts
             if (changes.Count == 0)
                 throw new AccountException("No changes in config!");
 
-            return string.Join('\n', changes);
+            return changes;
         }
     }
 }

@@ -6,7 +6,8 @@ namespace Banks
     {
         private static void Main()
         {
-            var ui = new ConsoleUI(new BanksViewModel());
+            using var vm = new BanksViewModel();
+            var ui = new ConsoleUI(vm);
             ui.Run();
         }
     }
