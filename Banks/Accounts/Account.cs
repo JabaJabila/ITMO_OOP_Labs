@@ -118,8 +118,7 @@ namespace Banks.Accounts
             if (IsTrusted)
                 return;
 
-            if (Client.Passport != null && Client.Address != null)
-                IsTrusted = true;
+            IsTrusted = Client.Passport != null && Client.Address != null;
         }
     }
 }
