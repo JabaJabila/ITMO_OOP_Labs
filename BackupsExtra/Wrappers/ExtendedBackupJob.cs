@@ -17,19 +17,19 @@ namespace BackupsExtra.Wrappers
         private readonly BackupJob _backupJob;
         private readonly ILogger _logger;
         private readonly IStorageCleaningAlgorithm _cleaningAlgorithm;
-        private readonly IRestorePointLimit _restorePointLimit;
+        private readonly IRestorePointLimiter _restorePointLimiter;
 
         public ExtendedBackupJob(
             IRepository repository,
             IStorageCreationAlgorithm creationAlgorithm,
             ILogger logger,
             IStorageCleaningAlgorithm cleaningAlgorithm,
-            IRestorePointLimit limit,
+            IRestorePointLimiter limiter,
             IReadOnlyCollection<JobObject> jobObjects = null)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _cleaningAlgorithm = cleaningAlgorithm ?? throw new ArgumentNullException(nameof(cleaningAlgorithm));
-            _restorePointLimit = limit ?? throw new ArgumentNullException(nameof(limit));
+            _restorePointLimiter = limiter ?? throw new ArgumentNullException(nameof(limiter));
             _backupJob = new BackupJob(repository, creationAlgorithm, jobObjects);
             _logger.LogMessage($"Created {_backupJob.BackupJobInfo()}");
         }

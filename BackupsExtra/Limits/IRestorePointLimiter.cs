@@ -1,6 +1,6 @@
 ﻿namespace BackupsExtra.Limits
 {
-    public interface IRestorePointLimit
+    public interface IRestorePointLimiter
     {
         // TODO
     }
