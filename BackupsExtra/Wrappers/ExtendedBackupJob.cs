@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Backups.Algorithms;
 using Backups.Entities;
 using Backups.Repository;
+using Backups.Tools;
 using BackupsExtra.Algorithms;
+using BackupsExtra.Extensions;
 using BackupsExtra.Limits;
 using BackupsExtra.Loggers;
 
@@ -28,7 +31,7 @@ namespace BackupsExtra.Wrappers
             _cleaningAlgorithm = cleaningAlgorithm ?? throw new ArgumentNullException(nameof(cleaningAlgorithm));
             _restorePointLimit = limit ?? throw new ArgumentNullException(nameof(limit));
             _backupJob = new BackupJob(repository, creationAlgorithm, jobObjects);
-            _logger.LogMessage();
+            _logger.LogMessage($"Created {_backupJob.BackupJobInfo()}");
         }
 
         public Guid Id => _backupJob.Id;
@@ -40,7 +43,7 @@ namespace BackupsExtra.Wrappers
             try
             {
                 _backupJob.AddJobObject(jobObject);
-                _logger.LogMessage(" "); // TODO
+                _logger.LogMessage($"Added {jobObject.JobObjectInfo()}");
             }
             catch (Exception exception)
             {
@@ -54,7 +57,7 @@ namespace BackupsExtra.Wrappers
             try
             {
                 _backupJob.DeleteJobObject(jobObject);
-                _logger.LogMessage(" "); // TODO
+                _logger.LogMessage($"Deleted {jobObject.JobObjectInfo()}");
             }
             catch (Exception exception)
             {
@@ -68,7 +71,7 @@ namespace BackupsExtra.Wrappers
             try
             {
                 _backupJob.CreateRestorePoint(creationTime);
-                _logger.LogMessage(" "); // TODO
+                _logger.LogMessage($"Created {GetLastRestorePoint().RestorePointInfo()}");
             }
             catch (Exception exception)
             {
@@ -82,13 +85,24 @@ namespace BackupsExtra.Wrappers
             try
             {
                 _backupJob.DeleteRestorePoint(restorePoint);
-                _logger.LogMessage(" "); // TODO
+                _logger.LogMessage($"Deleted {restorePoint.RestorePointInfo()}");
             }
             catch (Exception exception)
             {
                 _logger.LogException(exception);
                 throw;
             }
+        }
+
+        private RestorePoint GetLastRestorePoint()
+        {
+            if (Backup.RestorePoints.Count == 0)
+                throw new BackupException("Impossible to get last restore point: no restore points created!");
+
+            var allPoints = Backup.RestorePoints.ToList();
+            allPoints.Sort((x, y)
+                => DateTime.Compare(x.CreationTime, y.CreationTime));
+            return allPoints.Last();
         }
     }
 }
