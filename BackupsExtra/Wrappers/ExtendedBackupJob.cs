@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Backups.Algorithms;
 using Backups.Entities;
-using Backups.Repository;
 using Backups.Tools;
 using BackupsExtra.Algorithms;
 using BackupsExtra.Extensions;
@@ -16,20 +15,20 @@ namespace BackupsExtra.Wrappers
     {
         private readonly BackupJob _backupJob;
         private readonly ILogger _logger;
-        private readonly IStorageCleaningAlgorithm _cleaningAlgorithm;
         private readonly IRestorePointLimiter _restorePointLimiter;
+        private readonly IExtendedRepository _repository;
 
         public ExtendedBackupJob(
-            IRepository repository,
+            IExtendedRepository repository,
             IStorageCreationAlgorithm creationAlgorithm,
             ILogger logger,
-            IStorageCleaningAlgorithm cleaningAlgorithm,
+            IRestorePointsCleaningAlgorithm cleaningAlgorithm,
             IRestorePointLimiter limiter,
             IReadOnlyCollection<JobObject> jobObjects = null)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _cleaningAlgorithm = cleaningAlgorithm ?? throw new ArgumentNullException(nameof(cleaningAlgorithm));
             _restorePointLimiter = limiter ?? throw new ArgumentNullException(nameof(limiter));
+            _repository = repository ?? throw new ArgumentNullException(nameof(repository));
             _backupJob = new BackupJob(repository, creationAlgorithm, jobObjects);
             _logger.LogMessage($"Created {_backupJob.BackupJobInfo()}");
         }
@@ -72,6 +71,7 @@ namespace BackupsExtra.Wrappers
             {
                 _backupJob.CreateRestorePoint(creationTime);
                 _logger.LogMessage($"Created {GetLastRestorePoint().RestorePointInfo()}");
+                _restorePointLimiter.ControlRestorePoints(Backup.RestorePoints);
             }
             catch (Exception exception)
             {
@@ -92,6 +92,16 @@ namespace BackupsExtra.Wrappers
                 _logger.LogException(exception);
                 throw;
             }
+        }
+
+        public void RestoreToOriginalLocation(RestorePoint restorePoint)
+        {
+            // TODO
+        }
+
+        public void RestoreToDifferentLocation(RestorePoint restorePoint, string path)
+        {
+            // TODO
         }
 
         private RestorePoint GetLastRestorePoint()

@@ -1,6 +1,6 @@
 ﻿namespace BackupsExtra.Algorithms
 {
-    public class IStorageCleaningAlgorithm
+    public interface IRestorePointsCleaningAlgorithm
     {
         // TODO
     }

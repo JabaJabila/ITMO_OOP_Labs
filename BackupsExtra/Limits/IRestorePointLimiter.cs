@@ -1,7 +1,10 @@
-﻿namespace BackupsExtra.Limits
+﻿using System.Collections.Generic;
+using Backups.Entities;
+
+namespace BackupsExtra.Limits
 {
     public interface IRestorePointLimiter
     {
-        // TODO
+        void ControlRestorePoints(IReadOnlyList<RestorePoint> backupRestorePoints);
     }
 }
