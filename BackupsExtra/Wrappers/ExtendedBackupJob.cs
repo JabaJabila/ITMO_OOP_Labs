@@ -4,9 +4,8 @@ using System.Linq;
 using Backups.Algorithms;
 using Backups.Entities;
 using Backups.Tools;
-using BackupsExtra.Algorithms;
+using BackupsExtra.Controllers;
 using BackupsExtra.Extensions;
-using BackupsExtra.Limits;
 using BackupsExtra.Loggers;
 
 namespace BackupsExtra.Wrappers
@@ -15,19 +14,18 @@ namespace BackupsExtra.Wrappers
     {
         private readonly BackupJob _backupJob;
         private readonly ILogger _logger;
-        private readonly IRestorePointLimiter _restorePointLimiter;
         private readonly IExtendedRepository _repository;
+        private IRestorePointController _restorePointController;
 
         public ExtendedBackupJob(
             IExtendedRepository repository,
             IStorageCreationAlgorithm creationAlgorithm,
             ILogger logger,
-            IRestorePointsCleaningAlgorithm cleaningAlgorithm,
-            IRestorePointLimiter limiter,
+            IRestorePointController controller,
             IReadOnlyCollection<JobObject> jobObjects = null)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _restorePointLimiter = limiter ?? throw new ArgumentNullException(nameof(limiter));
+            _restorePointController = controller ?? throw new ArgumentNullException(nameof(controller));
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
             _backupJob = new BackupJob(repository, creationAlgorithm, jobObjects);
             _logger.LogMessage($"Created {_backupJob.BackupJobInfo()}");
@@ -70,8 +68,11 @@ namespace BackupsExtra.Wrappers
             try
             {
                 _backupJob.CreateRestorePoint(creationTime);
-                _logger.LogMessage($"Created {GetLastRestorePoint().RestorePointInfo()}");
-                _restorePointLimiter.ControlRestorePoints(Backup.RestorePoints);
+                _logger.LogMessage($"Created {GetOldestRestorePoint().RestorePointInfo()}");
+                _restorePointController
+                    .ControlRestorePoints(Backup.RestorePoints, _repository, _logger)
+                    .ToList()
+                    .ForEach(DeleteRestorePoint);
             }
             catch (Exception exception)
             {
@@ -104,7 +105,14 @@ namespace BackupsExtra.Wrappers
             // TODO
         }
 
-        private RestorePoint GetLastRestorePoint()
+        public void ChangeRestorePointController(IRestorePointController newController)
+        {
+            _restorePointController = newController ?? throw new ArgumentNullException(nameof(newController));
+            _logger.LogMessage($"Changed restore point controller at {_backupJob.BackupJobInfo()}");
+            _restorePointController.ControlRestorePoints(Backup.RestorePoints, _repository, _logger);
+        }
+
+        private RestorePoint GetOldestRestorePoint()
         {
             if (Backup.RestorePoints.Count == 0)
                 throw new BackupException("Impossible to get last restore point: no restore points created!");

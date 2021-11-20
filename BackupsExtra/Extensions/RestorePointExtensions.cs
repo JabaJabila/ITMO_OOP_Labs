@@ -8,7 +8,7 @@ namespace BackupsExtra.Extensions
     {
         public static string RestorePointInfo(this RestorePoint restorePoint)
         {
-            string[] storagesInfo = restorePoint.Storages.Select(storage => storage.StorageInfo()).ToArray();
+            string[] storagesInfo = restorePoint.Storages.Select(storage => "\t" + storage.StorageInfo()).ToArray();
             return $"restore point {restorePoint.Id} " +
                    $"created at: {restorePoint.CreationTime.ToString("g", CultureInfo.CurrentCulture)}" +
                    $"with {storagesInfo.Length} storages:\n" + string.Join('\n', storagesInfo);

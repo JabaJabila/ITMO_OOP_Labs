@@ -1,7 +1,13 @@
-﻿namespace BackupsExtra.Algorithms
+﻿using Backups.Entities;
+using BackupsExtra.Wrappers;
+
+namespace BackupsExtra.Algorithms
 {
     public interface IRestorePointsCleaningAlgorithm
     {
-        // TODO
+        void CleanRestorePoint(
+            RestorePoint pointOverLimit,
+            RestorePoint oldestPointInTheLimit,
+            IExtendedRepository repository);
     }
 }
