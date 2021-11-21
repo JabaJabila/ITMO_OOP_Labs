@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using Backups.Entities;
 using BackupsExtra.Wrappers;
+using BackupsExtra.Wrappers.Repositories;
 
 namespace BackupsExtra.Algorithms
 {
@@ -11,7 +12,8 @@ namespace BackupsExtra.Algorithms
             RestorePoint oldestPointInTheLimit,
             IExtendedRepository repository)
         {
-            if (repository.IsSingleStorageType(oldestPointInTheLimit))
+            if (repository.IsSingleStorageType(
+                oldestPointInTheLimit.Storages.Select(storage => storage.FullName).ToList()))
             {
                 repository.DeleteStorages(pointOverLimit.Storages.Select(storage => storage.FullName).ToList());
                 return;

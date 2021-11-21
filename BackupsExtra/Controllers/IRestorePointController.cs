@@ -2,6 +2,7 @@
 using Backups.Entities;
 using BackupsExtra.Loggers;
 using BackupsExtra.Wrappers;
+using BackupsExtra.Wrappers.Repositories;
 
 namespace BackupsExtra.Controllers
 {

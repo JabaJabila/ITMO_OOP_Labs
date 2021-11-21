@@ -7,12 +7,13 @@ using Backups.Tools;
 using BackupsExtra.Controllers;
 using BackupsExtra.Extensions;
 using BackupsExtra.Loggers;
+using BackupsExtra.Wrappers.Repositories;
 
-namespace BackupsExtra.Wrappers
+namespace BackupsExtra.Wrappers.BackupJob
 {
     public class ExtendedBackupJob
     {
-        private readonly BackupJob _backupJob;
+        private readonly Backups.Entities.BackupJob _backupJob;
         private readonly ILogger _logger;
         private readonly IExtendedRepository _repository;
         private IRestorePointController _restorePointController;
@@ -27,7 +28,7 @@ namespace BackupsExtra.Wrappers
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _restorePointController = controller ?? throw new ArgumentNullException(nameof(controller));
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
-            _backupJob = new BackupJob(repository, creationAlgorithm, jobObjects);
+            _backupJob = new Backups.Entities.BackupJob(repository, creationAlgorithm, jobObjects);
             _logger.LogMessage($"Created {_backupJob.BackupJobInfo()}");
         }
 
@@ -110,7 +111,8 @@ namespace BackupsExtra.Wrappers
 
             try
             {
-                _repository.RestoreToOriginalLocation(restorePoint.Storages.Select(storage => storage.FullName));
+                _repository.RestoreToOriginalLocation(
+                    restorePoint.Storages.Select(storage => storage.FullName).ToList());
                 _logger.LogMessage($"Successfully restored to original location {restorePoint.RestorePointInfo()}");
             }
             catch (Exception exception)
@@ -139,7 +141,7 @@ namespace BackupsExtra.Wrappers
             try
             {
                 _repository.RestoreToDifferentLocation(
-                    restorePoint.Storages.Select(storage => storage.FullName),
+                    restorePoint.Storages.Select(storage => storage.FullName).ToList(),
                     path);
                 _logger.LogMessage($"Successfully restored to {path} {restorePoint.RestorePointInfo()}");
             }
