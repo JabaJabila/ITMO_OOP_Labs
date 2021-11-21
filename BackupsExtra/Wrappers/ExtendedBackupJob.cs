@@ -97,12 +97,57 @@ namespace BackupsExtra.Wrappers
 
         public void RestoreToOriginalLocation(RestorePoint restorePoint)
         {
-            // TODO
+            if (restorePoint == null)
+                throw new ArgumentNullException(nameof(restorePoint));
+
+            if (!Backup.RestorePoints.Contains(restorePoint))
+            {
+                var exception = new BackupException($"Restore point {restorePoint.Id} " +
+                                                          "wasn't created by this backup job!");
+                _logger.LogException(exception);
+                throw exception;
+            }
+
+            try
+            {
+                _repository.RestoreToOriginalLocation(restorePoint.Storages.Select(storage => storage.FullName));
+                _logger.LogMessage($"Successfully restored to original location {restorePoint.RestorePointInfo()}");
+            }
+            catch (Exception exception)
+            {
+                _logger.LogException(exception);
+                throw;
+            }
         }
 
         public void RestoreToDifferentLocation(RestorePoint restorePoint, string path)
         {
-            // TODO
+            if (restorePoint == null)
+                throw new ArgumentNullException(nameof(restorePoint));
+
+            if (path == null)
+                throw new ArgumentNullException(nameof(path));
+
+            if (!Backup.RestorePoints.Contains(restorePoint))
+            {
+                var exception = new BackupException($"Restore point {restorePoint.Id} " +
+                                                    "wasn't created by this backup job!");
+                _logger.LogException(exception);
+                throw exception;
+            }
+
+            try
+            {
+                _repository.RestoreToDifferentLocation(
+                    restorePoint.Storages.Select(storage => storage.FullName),
+                    path);
+                _logger.LogMessage($"Successfully restored to {path} {restorePoint.RestorePointInfo()}");
+            }
+            catch (Exception exception)
+            {
+                _logger.LogException(exception);
+                throw;
+            }
         }
 
         public void ChangeRestorePointController(IRestorePointController newController)

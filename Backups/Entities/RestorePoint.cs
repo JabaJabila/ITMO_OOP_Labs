@@ -24,5 +24,14 @@ namespace Backups.Entities
         public IReadOnlyList<Storage> Storages => _storages;
         public DateTime CreationTime { get; }
         public Guid Id { get; }
+
+        public void AddStorage(Storage storage)
+        {
+            if (storage == null)
+                throw new ArgumentNullException(nameof(storage));
+
+            if (!_storages.Contains(storage))
+                _storages.Add(storage);
+        }
     }
 }
