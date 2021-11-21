@@ -33,15 +33,23 @@ namespace BackupsExtra.Controllers
             if (backupRestorePoints.Count <= LimitAmount) return null;
 
             long countPointsToRemove = backupRestorePoints.Count - LimitAmount;
+            if (countPointsToRemove == backupRestorePoints.Count)
+            {
+                var exception = new BackupException("Unacceptable operation! " +
+                                                    "Restore point controller has to clean all restore points!");
+                logger.LogException(exception);
+                throw exception;
+            }
+
             var restorePointInfo = new List<string>();
             var pointsSortedCopy = backupRestorePoints.ToList();
             var restorePointsToDelete = new List<RestorePoint>();
             pointsSortedCopy.Sort((x, y)
                 => DateTime.Compare(x.CreationTime, y.CreationTime));
 
-            for (int pointListPos = backupRestorePoints.Count - 1;
-                pointListPos >= LimitAmount - 1;
-                pointListPos--)
+            for (int pointListPos = LimitAmount - 1;
+                pointListPos < backupRestorePoints.Count;
+                pointListPos++)
             {
                 _algorithm.CleanRestorePoint(
                     pointsSortedCopy[pointListPos],
