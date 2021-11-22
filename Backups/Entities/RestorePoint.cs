@@ -25,13 +25,16 @@ namespace Backups.Entities
         public DateTime CreationTime { get; }
         public Guid Id { get; }
 
-        public void AddStorage(Storage storage)
+        public void RelocateStorage(Storage storage, RestorePoint restorePointFrom)
         {
             if (storage == null)
                 throw new ArgumentNullException(nameof(storage));
+            if (restorePointFrom == null)
+                throw new ArgumentNullException(nameof(restorePointFrom));
 
-            if (!_storages.Contains(storage))
-                _storages.Add(storage);
+            if (!restorePointFrom.Storages.Contains(storage) || _storages.Contains(storage)) return;
+            _storages.Add(storage);
+            restorePointFrom._storages.Remove(storage);
         }
     }
 }

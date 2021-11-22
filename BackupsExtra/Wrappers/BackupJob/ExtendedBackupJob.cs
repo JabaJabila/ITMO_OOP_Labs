@@ -70,10 +70,10 @@ namespace BackupsExtra.Wrappers.BackupJob
             {
                 _backupJob.CreateRestorePoint(creationTime);
                 _logger.LogMessage($"Created {GetOldestRestorePoint().RestorePointInfo()}");
-                _restorePointController
-                    .ControlRestorePoints(Backup.RestorePoints, _repository, _logger)
-                    .ToList()
-                    .ForEach(DeleteRestorePoint);
+                IReadOnlyCollection<RestorePoint> pointsToDelete = _restorePointController
+                    .ControlRestorePoints(Backup.RestorePoints, _repository, _logger);
+
+                pointsToDelete?.ToList().ForEach(_backupJob.DeleteRestorePoint);
             }
             catch (Exception exception)
             {
@@ -156,7 +156,10 @@ namespace BackupsExtra.Wrappers.BackupJob
         {
             _restorePointController = newController ?? throw new ArgumentNullException(nameof(newController));
             _logger.LogMessage($"Changed restore point controller at {_backupJob.BackupJobInfo()}");
-            _restorePointController.ControlRestorePoints(Backup.RestorePoints, _repository, _logger);
+            IReadOnlyCollection<RestorePoint> pointsToDelete = _restorePointController
+                .ControlRestorePoints(Backup.RestorePoints, _repository, _logger);
+
+            pointsToDelete?.ToList().ForEach(_backupJob.DeleteRestorePoint);
         }
 
         private RestorePoint GetOldestRestorePoint()

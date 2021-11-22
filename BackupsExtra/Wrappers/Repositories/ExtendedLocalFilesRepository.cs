@@ -91,18 +91,21 @@ namespace BackupsExtra.Wrappers.Repositories
             if (pathToRestore == null)
                 throw new ArgumentNullException(nameof(pathToRestore));
 
+            Directory.CreateDirectory(pathToRestore);
+
             foreach (string storagePath in storagePaths)
             {
                 List<string> objectPaths = _objectsOriginalLocation[storagePath];
                 foreach (string objectPath in objectPaths)
                 {
+                    string filename = Path.GetFileName(objectPath);
                     if (File.Exists(Path.Combine(pathToRestore, Path.GetFileName(objectPath))))
                     {
                         throw new BackupException($"Impossible to restore to {pathToRestore}" +
-                                                  $"file {Path.GetFileName(objectPath)} already exists");
+                                                  $"file {filename} already exists");
                     }
 
-                    _compressor.Extract(storagePath, Path.GetFileName(objectPath), pathToRestore);
+                    _compressor.Extract(storagePath, filename, Path.Combine(pathToRestore, filename));
                 }
             }
         }

@@ -10,7 +10,7 @@ using BackupsExtra.Wrappers.Repositories;
 
 namespace BackupsExtra.Controllers
 {
-    public class HybridController
+    public class HybridController : IRestorePointController
     {
         private readonly IRestorePointsCleaningAlgorithm _algorithm;
 
@@ -44,15 +44,15 @@ namespace BackupsExtra.Controllers
             pointsSortedCopy.Sort((x, y)
                 => DateTime.Compare(x.CreationTime, y.CreationTime));
 
-            for (int pointListPos = LimitAmount - 1;
-                pointListPos < backupRestorePoints.Count;
+            for (int pointListPos = 0;
+                pointListPos < pointsSortedCopy.Count - LimitAmount;
                 pointListPos++)
             {
                 restorePointsToDeleteByCount.Add(pointsSortedCopy[pointListPos]);
             }
 
             pointsSortedCopy
-                .Where(point => DateTime.Compare(point.CreationTime, LimitDate) > 0)
+                .Where(point => DateTime.Compare(point.CreationTime, LimitDate) < 0)
                 .ToList()
                 .ForEach(point => restorePointsToDeleteByDate.Add(point));
 
@@ -73,7 +73,7 @@ namespace BackupsExtra.Controllers
                 .ToList();
 
             RestorePoint oldestPointInTheLimit = pointsSortedCopy
-                .Last(point => !restorePointsToDelete.Contains(point));
+                .First(point => !restorePointsToDelete.Contains(point));
 
             restorePointsToDelete.ForEach(point =>
                 _algorithm.CleanRestorePoint(point, oldestPointInTheLimit, repository));

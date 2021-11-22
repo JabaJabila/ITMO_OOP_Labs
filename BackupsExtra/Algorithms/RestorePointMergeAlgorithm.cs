@@ -25,7 +25,7 @@ namespace BackupsExtra.Algorithms
                         oldestPointInTheLimit.Storages.Select(s => s.FullName).ToList()))
                 .ToList();
 
-            newStorages.ForEach(oldestPointInTheLimit.AddStorage);
+            newStorages.ForEach(storage => oldestPointInTheLimit.RelocateStorage(storage, pointOverLimit));
         }
     }
 }

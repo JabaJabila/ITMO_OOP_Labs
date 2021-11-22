@@ -47,13 +47,13 @@ namespace BackupsExtra.Controllers
             pointsSortedCopy.Sort((x, y)
                 => DateTime.Compare(x.CreationTime, y.CreationTime));
 
-            for (int pointListPos = LimitAmount - 1;
-                pointListPos < backupRestorePoints.Count;
+            for (int pointListPos = 0;
+                pointListPos < countPointsToRemove;
                 pointListPos++)
             {
                 _algorithm.CleanRestorePoint(
                     pointsSortedCopy[pointListPos],
-                    pointsSortedCopy[LimitAmount - 1],
+                    pointsSortedCopy[(Index)countPointsToRemove],
                     repository);
                 restorePointInfo.Add("\t" + pointsSortedCopy[pointListPos].RestorePointInfo());
                 restorePointsToDelete.Add(pointsSortedCopy[pointListPos]);
