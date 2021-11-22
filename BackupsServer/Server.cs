@@ -55,9 +55,32 @@ namespace BackupsServer
                 case ActionOption.CreateDirectory:
                     CreateJobDirectory();
                     break;
+                case ActionOption.GetFile:
+                    SendFile();
+                    break;
                 default:
                     return;
             }
+        }
+
+        private void SendFile()
+        {
+            string storagePath = GetLocation();
+            string location = Path.Combine(DirectoryPath, storagePath);
+            if (!File.Exists(location))
+                return;
+
+            string storageName = Path.GetFileName(location);
+            
+            byte[] lengthNameBytes = BitConverter.GetBytes(storageName.Length);
+            byte[] fileNameBytes = Encoding.ASCII.GetBytes(storageName);
+            byte[] dataBytes = File.ReadAllBytes(location);
+            byte[] dataLengthBytes = BitConverter.GetBytes(dataBytes.Length);
+
+            NetworkStream.Write(lengthNameBytes, 0, lengthNameBytes.Length);
+            NetworkStream.Write(fileNameBytes, 0, fileNameBytes.Length);
+            NetworkStream.Write(dataLengthBytes, 0, dataLengthBytes.Length);
+            NetworkStream.Write(dataBytes, 0, dataBytes.Length);
         }
 
         private string GetLocation()

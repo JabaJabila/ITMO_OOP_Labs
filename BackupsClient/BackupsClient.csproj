@@ -12,6 +12,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\BackupsExtra\BackupsExtra.csproj" />
       <ProjectReference Include="..\BackupsServer\BackupsServer.csproj" />
       <ProjectReference Include="..\Backups\Backups.csproj" />
     </ItemGroup>
