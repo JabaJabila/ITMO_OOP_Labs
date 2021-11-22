@@ -19,12 +19,6 @@ namespace BackupsExtra.Wrappers.Compressors
             _compressor.Compress(stream, jobObjectPath);
         }
 
-        public bool IfStorageContainsOneObject(string pathToArchive)
-        {
-            using ZipArchive archive = ZipFile.Open(pathToArchive, ZipArchiveMode.Read);
-            return archive.Entries.Count == 1;
-        }
-
         public void Extract(string pathToArchive, string objectName, string location)
         {
             if (pathToArchive == null)
