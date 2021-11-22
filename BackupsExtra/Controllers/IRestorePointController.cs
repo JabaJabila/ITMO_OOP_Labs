@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Backups.Algorithms;
 using Backups.Entities;
 using BackupsExtra.Loggers;
 using BackupsExtra.Wrappers.Repositories;
@@ -10,6 +11,7 @@ namespace BackupsExtra.Controllers
         IReadOnlyCollection<RestorePoint> ControlRestorePoints(
             IReadOnlyList<RestorePoint> backupRestorePoints,
             IExtendedRepository repository,
-            ILogger logger);
+            ILogger logger,
+            IStorageCreationAlgorithm storageCreationAlgorithm);
     }
 }

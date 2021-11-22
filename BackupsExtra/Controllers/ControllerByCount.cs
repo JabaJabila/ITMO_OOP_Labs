@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Backups.Algorithms;
 using Backups.Entities;
 using Backups.Tools;
 using BackupsExtra.Algorithms;
@@ -28,7 +29,8 @@ namespace BackupsExtra.Controllers
         public IReadOnlyCollection<RestorePoint> ControlRestorePoints(
             IReadOnlyList<RestorePoint> backupRestorePoints,
             IExtendedRepository repository,
-            ILogger logger)
+            ILogger logger,
+            IStorageCreationAlgorithm storageCreationAlgorithm)
         {
             if (backupRestorePoints.Count <= LimitAmount) return null;
 
@@ -54,7 +56,8 @@ namespace BackupsExtra.Controllers
                 _algorithm.CleanRestorePoint(
                     pointsSortedCopy[pointListPos],
                     pointsSortedCopy[(Index)countPointsToRemove],
-                    repository);
+                    repository,
+                    storageCreationAlgorithm);
                 restorePointInfo.Add("\t" + pointsSortedCopy[pointListPos].RestorePointInfo());
                 restorePointsToDelete.Add(pointsSortedCopy[pointListPos]);
             }

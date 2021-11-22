@@ -59,14 +59,6 @@ namespace BackupsExtra.Wrappers.Repositories
             _repository.SaveInArchive(storagePath, jobObjectPath);
         }
 
-        public bool IsSingleStorageType(IReadOnlyCollection<string> storagePaths)
-        {
-            if (storagePaths == null)
-                throw new ArgumentNullException(nameof(storagePaths));
-
-            return !storagePaths.ToList().All(path => _compressor.IfStorageContainsOneObject(path));
-        }
-
         public bool CheckIfStorageInRestorePoint(string storageFullName, List<string> storagePathsInPoint)
         {
             if (storageFullName == null)

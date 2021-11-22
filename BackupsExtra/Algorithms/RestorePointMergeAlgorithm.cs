@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using Backups.Algorithms;
 using Backups.Entities;
 using BackupsExtra.Wrappers.Repositories;
 
@@ -6,13 +7,15 @@ namespace BackupsExtra.Algorithms
 {
     public class RestorePointMergeAlgorithm : IRestorePointsCleaningAlgorithm
     {
+        private const string StorageAlgorithmExclusion = "SingleStorageAlgorithm";
+
         public void CleanRestorePoint(
             RestorePoint pointOverLimit,
             RestorePoint oldestPointInTheLimit,
-            IExtendedRepository repository)
+            IExtendedRepository repository,
+            IStorageCreationAlgorithm storageCreationAlgorithm)
         {
-            if (repository.IsSingleStorageType(
-                oldestPointInTheLimit.Storages.Select(storage => storage.FullName).ToList()))
+            if (storageCreationAlgorithm.GetType().Name == StorageAlgorithmExclusion)
             {
                 repository.DeleteStorages(pointOverLimit.Storages.Select(storage => storage.FullName).ToList());
                 return;

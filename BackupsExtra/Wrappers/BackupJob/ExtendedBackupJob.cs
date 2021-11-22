@@ -17,6 +17,7 @@ namespace BackupsExtra.Wrappers.BackupJob
         private readonly ILogger _logger;
         private readonly IExtendedRepository _repository;
         private IRestorePointController _restorePointController;
+        private IStorageCreationAlgorithm _creationAlgorithm;
 
         public ExtendedBackupJob(
             IExtendedRepository repository,
@@ -28,6 +29,7 @@ namespace BackupsExtra.Wrappers.BackupJob
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _restorePointController = controller ?? throw new ArgumentNullException(nameof(controller));
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
+            _creationAlgorithm = creationAlgorithm ?? throw new ArgumentNullException(nameof(creationAlgorithm));
             _backupJob = new Backups.Entities.BackupJob(repository, creationAlgorithm, jobObjects);
             _logger.LogMessage($"Created {_backupJob.BackupJobInfo()}");
         }
@@ -71,7 +73,7 @@ namespace BackupsExtra.Wrappers.BackupJob
                 _backupJob.CreateRestorePoint(creationTime);
                 _logger.LogMessage($"Created {GetOldestRestorePoint().RestorePointInfo()}");
                 IReadOnlyCollection<RestorePoint> pointsToDelete = _restorePointController
-                    .ControlRestorePoints(Backup.RestorePoints, _repository, _logger);
+                    .ControlRestorePoints(Backup.RestorePoints, _repository, _logger, _creationAlgorithm);
 
                 pointsToDelete?.ToList().ForEach(_backupJob.DeleteRestorePoint);
             }
@@ -157,7 +159,7 @@ namespace BackupsExtra.Wrappers.BackupJob
             _restorePointController = newController ?? throw new ArgumentNullException(nameof(newController));
             _logger.LogMessage($"Changed restore point controller at {_backupJob.BackupJobInfo()}");
             IReadOnlyCollection<RestorePoint> pointsToDelete = _restorePointController
-                .ControlRestorePoints(Backup.RestorePoints, _repository, _logger);
+                .ControlRestorePoints(Backup.RestorePoints, _repository, _logger, _creationAlgorithm);
 
             pointsToDelete?.ToList().ForEach(_backupJob.DeleteRestorePoint);
         }

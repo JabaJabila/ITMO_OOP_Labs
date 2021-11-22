@@ -44,15 +44,6 @@ namespace BackupsExtra.Wrappers.Repositories
             storagesNames.ForEach(name => _objectsOriginalLocation.Remove(name));
         }
 
-        public bool IsSingleStorageType(IReadOnlyCollection<string> storagePaths)
-        {
-            if (storagePaths == null)
-                throw new ArgumentNullException(nameof(storagePaths));
-
-            return storagePaths.ToList().Any(path =>
-                _objectsOriginalLocation.ContainsKey(path) && _objectsOriginalLocation[path].Count > 1);
-        }
-
         public bool CheckIfStorageInRestorePoint(string storageFullName, List<string> storagePathsInPoint)
         {
             if (storageFullName == null)

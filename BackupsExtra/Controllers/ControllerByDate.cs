@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Backups.Algorithms;
 using Backups.Entities;
 using Backups.Tools;
 using BackupsExtra.Algorithms;
@@ -25,7 +26,8 @@ namespace BackupsExtra.Controllers
         public IReadOnlyCollection<RestorePoint> ControlRestorePoints(
             IReadOnlyList<RestorePoint> backupRestorePoints,
             IExtendedRepository repository,
-            ILogger logger)
+            ILogger logger,
+            IStorageCreationAlgorithm storageCreationAlgorithm)
         {
             var restorePointInfo = new List<string>();
             var pointsSortedCopy = backupRestorePoints.ToList();
@@ -55,7 +57,7 @@ namespace BackupsExtra.Controllers
                 .First(point => DateTime.Compare(point.CreationTime, LimitDate) >= 0);
 
             restorePointsToDelete.ForEach(point =>
-                _algorithm.CleanRestorePoint(point, oldestPointInTheLimit, repository));
+                _algorithm.CleanRestorePoint(point, oldestPointInTheLimit, repository, storageCreationAlgorithm));
 
             logger.LogMessage($"Cleaned {restorePointsToDelete.Count} restore points by {_algorithm.GetType().Name}:\n"
                                   + string.Join('\n', restorePointInfo));

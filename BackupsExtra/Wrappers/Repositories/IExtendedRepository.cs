@@ -5,7 +5,6 @@ namespace BackupsExtra.Wrappers.Repositories
 {
     public interface IExtendedRepository : IRepository
     {
-        bool IsSingleStorageType(IReadOnlyCollection<string> storagePaths);
         bool CheckIfStorageInRestorePoint(string storageFullName, List<string> storagePathsInPoint);
         void RestoreToDifferentLocation(IReadOnlyCollection<string> storagePaths, string pathToRestore);
         void RestoreToOriginalLocation(IReadOnlyCollection<string> storagePaths);

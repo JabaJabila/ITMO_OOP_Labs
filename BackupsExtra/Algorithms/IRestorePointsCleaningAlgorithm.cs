@@ -1,4 +1,5 @@
-﻿using Backups.Entities;
+﻿using Backups.Algorithms;
+using Backups.Entities;
 using BackupsExtra.Wrappers.Repositories;
 
 namespace BackupsExtra.Algorithms
@@ -8,6 +9,7 @@ namespace BackupsExtra.Algorithms
         void CleanRestorePoint(
             RestorePoint pointOverLimit,
             RestorePoint oldestPointInTheLimit,
-            IExtendedRepository repository);
+            IExtendedRepository repository,
+            IStorageCreationAlgorithm storageCreationAlgorithm);
     }
 }
