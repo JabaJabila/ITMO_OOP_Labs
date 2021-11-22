@@ -25,14 +25,10 @@ namespace BackupsExtra.Wrappers.Repositories
         }
 
         public void CreateBackupJobRepository(Guid backupJobId)
-        {
-            _repository.CreateBackupJobRepository(backupJobId);
-        }
+            => _repository.CreateBackupJobRepository(backupJobId);
 
         public bool CheckIfJobObjectExists(string fullName)
-        {
-            return _repository.CheckIfJobObjectExists(fullName);
-        }
+            => _repository.CheckIfJobObjectExists(fullName);
 
         public string CreateStorage(List<string> jobObjectsPaths, Guid backupJobId, Guid storageId)
         {
@@ -55,9 +51,7 @@ namespace BackupsExtra.Wrappers.Repositories
         }
 
         public void SaveInArchive(string storagePath, string jobObjectPath)
-        {
-            _repository.SaveInArchive(storagePath, jobObjectPath);
-        }
+            => _repository.SaveInArchive(storagePath, jobObjectPath);
 
         public bool CheckIfStorageInRestorePoint(string storageFullName, List<string> storagePathsInPoint)
         {
