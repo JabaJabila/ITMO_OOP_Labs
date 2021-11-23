@@ -5,13 +5,17 @@ using System.Linq;
 using Backups.Repository;
 using Backups.Tools;
 using BackupsExtra.Wrappers.Compressors;
+using Newtonsoft.Json;
 
 namespace BackupsExtra.Wrappers.Repositories
 {
     public class ExtendedLocalFilesRepository : IExtendedRepository, IRepositoryWithArchivator
     {
+        [JsonProperty("repository")]
         private readonly LocalFilesRepository _repository;
+        [JsonProperty("objectsOriginalLocation")]
         private readonly Dictionary<string, List<string>> _objectsOriginalLocation;
+        [JsonProperty("compressor")]
         private readonly IExtendedCompressor _compressor;
 
         public ExtendedLocalFilesRepository(
@@ -22,6 +26,18 @@ namespace BackupsExtra.Wrappers.Repositories
             _compressor = compressor ?? throw new ArgumentNullException(nameof(compressor));
             _repository = new LocalFilesRepository(repositoryPath, compressor, storageFileExtension);
             _objectsOriginalLocation = new Dictionary<string, List<string>>();
+        }
+
+        [JsonConstructor]
+        private ExtendedLocalFilesRepository(
+            LocalFilesRepository repository,
+            IExtendedCompressor compressor,
+            Dictionary<string, List<string>> objectsOriginalLocation)
+        {
+            _compressor = compressor ?? throw new ArgumentNullException(nameof(compressor));
+            _repository = repository ?? throw new ArgumentNullException(nameof(repository));
+            _objectsOriginalLocation = objectsOriginalLocation ??
+                                       throw new ArgumentNullException(nameof(objectsOriginalLocation));
         }
 
         public void CreateBackupJobRepository(Guid backupJobId)

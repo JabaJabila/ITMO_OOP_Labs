@@ -9,25 +9,25 @@ namespace BackupsExtra.Loggers
     {
         public FileLogger(string pathToFile, bool timeCodeRequired = false)
         {
-            FilePath = pathToFile ?? throw new ArgumentNullException(nameof(pathToFile));
+            PathToFile = pathToFile ?? throw new ArgumentNullException(nameof(pathToFile));
             if (!Directory.Exists(new FileInfo(pathToFile).DirectoryName))
                 throw new LoggerException($"File at {pathToFile} unreachable!");
 
             TimeCodeRequired = timeCodeRequired;
         }
 
-        public string FilePath { get; }
+        public string PathToFile { get; }
         public bool TimeCodeRequired { get; }
 
         public void LogMessage(string message)
         {
-            using StreamWriter sw = File.AppendText(FilePath);
+            using StreamWriter sw = File.AppendText(PathToFile);
             sw.WriteLine($"{GetTimeCode()}{message}");
         }
 
         public void LogException(Exception exception)
         {
-            using StreamWriter sw = File.AppendText(FilePath);
+            using StreamWriter sw = File.AppendText(PathToFile);
             sw.WriteLine($"{GetTimeCode()}{exception.Message}");
         }
 

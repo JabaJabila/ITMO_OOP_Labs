@@ -8,14 +8,19 @@ using Backups.Tools;
 using BackupsExtra.Wrappers.Compressors;
 using BackupsExtra.Wrappers.Repositories;
 using BackupsServer.DataTypes;
+using Newtonsoft.Json;
 
 namespace BackupsClient.Entities
 {
     public class ExtendedClientToServerRepository : IExtendedRepository, IRepositoryWithArchivator
     {
+        [JsonProperty("repository")]
         private readonly ClientToServerRepository _repository;
+        [JsonProperty("objectsOriginalLocation")]
         private readonly Dictionary<string, List<string>> _objectsOriginalLocation;
+        [JsonProperty("client")]
         private readonly Client _client;
+        [JsonProperty("compressor")]
         private readonly IExtendedCompressor _compressor;
 
         public ExtendedClientToServerRepository(
@@ -27,6 +32,20 @@ namespace BackupsClient.Entities
             _client = client ?? throw new ArgumentNullException(nameof(client));
             _repository = new ClientToServerRepository(compressor, storageFileExtension, client);
             _objectsOriginalLocation = new Dictionary<string, List<string>>();
+        }
+
+        [JsonConstructor]
+        private ExtendedClientToServerRepository(
+            ClientToServerRepository repository,
+            Dictionary<string, List<string>> objectsOriginalLocation,
+            Client client,
+            IExtendedCompressor compressor)
+        {
+            _repository = repository ?? throw new ArgumentNullException(nameof(repository));
+            _objectsOriginalLocation = objectsOriginalLocation ??
+                                       throw new ArgumentNullException(nameof(objectsOriginalLocation));
+            _client = client ?? throw new ArgumentNullException(nameof(client));
+            _compressor = compressor ?? throw new ArgumentNullException(nameof(compressor));
         }
 
         public void CreateBackupJobRepository(Guid backupJobId)

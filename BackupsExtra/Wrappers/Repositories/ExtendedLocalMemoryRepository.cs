@@ -4,18 +4,31 @@ using System.IO;
 using System.Linq;
 using Backups.Repository;
 using Backups.Tools;
+using Newtonsoft.Json;
 
 namespace BackupsExtra.Wrappers.Repositories
 {
     public class ExtendedLocalMemoryRepository : IExtendedRepository
     {
+        [JsonProperty("repository")]
         private readonly LocalMemoryRepository _repository;
+        [JsonProperty("objectsOriginalLocation")]
         private readonly Dictionary<string, List<string>> _objectsOriginalLocation;
 
         public ExtendedLocalMemoryRepository()
         {
             _repository = new LocalMemoryRepository();
             _objectsOriginalLocation = new Dictionary<string, List<string>>();
+        }
+
+        [JsonConstructor]
+        private ExtendedLocalMemoryRepository(
+            LocalMemoryRepository repository,
+            Dictionary<string, List<string>> objectsOriginalLocation)
+        {
+            _repository = repository ?? throw new ArgumentNullException(nameof(repository));
+            _objectsOriginalLocation = objectsOriginalLocation ??
+                                       throw new ArgumentNullException(nameof(objectsOriginalLocation));
         }
 
         public void CreateBackupJobRepository(Guid backupJobId)

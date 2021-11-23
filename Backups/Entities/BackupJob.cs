@@ -4,13 +4,17 @@ using System.Linq;
 using Backups.Algorithms;
 using Backups.Repository;
 using Backups.Tools;
+using Newtonsoft.Json;
 
 namespace Backups.Entities
 {
     public class BackupJob
     {
+        [JsonProperty("algorithm")]
         private readonly IStorageCreationAlgorithm _algorithm;
+        [JsonProperty("jobObjects")]
         private readonly List<JobObject> _jobObjects;
+        [JsonProperty("repository")]
         private readonly IRepository _repository;
 
         public BackupJob(
@@ -22,7 +26,6 @@ namespace Backups.Entities
             _algorithm = algorithm ?? throw new ArgumentNullException(nameof(algorithm));
             Id = Guid.NewGuid();
             _repository.CreateBackupJobRepository(Id);
-            _jobObjects = new List<JobObject>();
 
             JobObject invalidJobObject = jobObjects?.FirstOrDefault(jobObject => _repository
                 .CheckIfJobObjectExists(jobObject.FullName));
@@ -37,7 +40,23 @@ namespace Backups.Entities
             Backup = new Backup();
         }
 
+        [JsonConstructor]
+        private BackupJob(
+            Guid id,
+            IRepository repository,
+            IStorageCreationAlgorithm algorithm,
+            List<JobObject> jobObjects,
+            Backup backup)
+        {
+            Id = id;
+            _repository = repository ?? throw new ArgumentNullException(nameof(repository));
+            _algorithm = algorithm ?? throw new ArgumentNullException(nameof(algorithm));
+            _jobObjects = jobObjects ?? throw new ArgumentNullException(nameof(jobObjects));
+            Backup = backup ?? throw new ArgumentNullException(nameof(backup));
+        }
+
         public Guid Id { get; }
+        [JsonIgnore]
         public IReadOnlyCollection<JobObject> JobObjects => _jobObjects;
         public Backup Backup { get; }
 

@@ -2,16 +2,24 @@
 using System.IO;
 using System.IO.Compression;
 using Backups.Repository;
+using Newtonsoft.Json;
 
 namespace BackupsExtra.Wrappers.Compressors
 {
     public class ExtendedZipArchiveCompressor : IExtendedCompressor
     {
+        [JsonProperty("compressor")]
         private readonly ZipArchiveCompressor _compressor;
 
         public ExtendedZipArchiveCompressor(CompressionLevel compressionLevel = CompressionLevel.Optimal)
         {
             _compressor = new ZipArchiveCompressor(compressionLevel);
+        }
+
+        [JsonConstructor]
+        private ExtendedZipArchiveCompressor(ZipArchiveCompressor compressor)
+        {
+            _compressor = compressor ?? throw new ArgumentNullException(nameof(compressor));
         }
 
         public void Compress(Stream stream, string jobObjectPath)

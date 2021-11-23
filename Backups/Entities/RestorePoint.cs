@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json;
 
 namespace Backups.Entities
 {
     public class RestorePoint
     {
+        [JsonProperty("storages")]
         private readonly List<Storage> _storages;
         public RestorePoint(IReadOnlyCollection<Storage> storages, DateTime? dateTime = null)
         {
@@ -14,13 +16,15 @@ namespace Backups.Entities
             Id = Guid.NewGuid();
         }
 
-        public RestorePoint(Storage storage, DateTime? dateTime = null)
+        [JsonConstructor]
+        private RestorePoint(Guid id, DateTime creationTime, List<Storage> storages)
         {
-            _storages = new List<Storage>(new[] { storage });
-            CreationTime = dateTime ?? DateTime.Now;
-            Id = Guid.NewGuid();
+            Id = id;
+            CreationTime = creationTime;
+            _storages = storages ?? throw new ArgumentNullException(nameof(storages));
         }
 
+        [JsonIgnore]
         public IReadOnlyList<Storage> Storages => _storages;
         public DateTime CreationTime { get; }
         public Guid Id { get; }

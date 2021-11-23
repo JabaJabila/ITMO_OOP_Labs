@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text;
 using Backups.Algorithms;
 using Backups.Entities;
 using Backups.Tools;
@@ -8,16 +10,22 @@ using BackupsExtra.Controllers;
 using BackupsExtra.Extensions;
 using BackupsExtra.Loggers;
 using BackupsExtra.Wrappers.Repositories;
+using Newtonsoft.Json;
 
 namespace BackupsExtra.Wrappers.BackupJob
 {
     public class ExtendedBackupJob
     {
+        [JsonProperty("backupJob")]
         private readonly Backups.Entities.BackupJob _backupJob;
+        [JsonProperty("logger")]
         private readonly ILogger _logger;
+        [JsonProperty("repository")]
         private readonly IExtendedRepository _repository;
+        [JsonProperty("creationAlgorithm")]
+        private readonly IStorageCreationAlgorithm _creationAlgorithm;
+        [JsonProperty("restorePointController")]
         private IRestorePointController _restorePointController;
-        private IStorageCreationAlgorithm _creationAlgorithm;
 
         public ExtendedBackupJob(
             IExtendedRepository repository,
@@ -34,9 +42,69 @@ namespace BackupsExtra.Wrappers.BackupJob
             _logger.LogMessage($"Created {_backupJob.BackupJobInfo()}");
         }
 
+        [JsonConstructor]
+        private ExtendedBackupJob(
+            Backups.Entities.BackupJob backupJob,
+            IExtendedRepository repository,
+            IStorageCreationAlgorithm creationAlgorithm,
+            ILogger logger,
+            IRestorePointController restorePointController)
+        {
+            _backupJob = backupJob ?? throw new ArgumentNullException(nameof(backupJob));
+            _repository = repository ?? throw new ArgumentNullException(nameof(repository));
+            _creationAlgorithm = creationAlgorithm ?? throw new ArgumentNullException(nameof(creationAlgorithm));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _restorePointController =
+                restorePointController ?? throw new ArgumentNullException(nameof(restorePointController));
+            _logger.LogMessage($"Successfully loaded backup jon {_backupJob.BackupJobInfo()}");
+        }
+
+        [JsonIgnore]
         public Guid Id => _backupJob.Id;
+        [JsonIgnore]
         public IReadOnlyCollection<JobObject> JobObjects => _backupJob.JobObjects;
+        [JsonIgnore]
         public Backup Backup => _backupJob.Backup;
+
+        public static ExtendedBackupJob LoadBackupJob(FileStream stream)
+        {
+            if (!stream.CanRead) throw new BackupException("Impossible to load data! Stream closed for reading!");
+
+            using var memoryStream = new MemoryStream();
+            stream.CopyTo(memoryStream);
+            byte[] data = memoryStream.ToArray();
+
+            ExtendedBackupJob backupJob = JsonConvert
+                .DeserializeObject<ExtendedBackupJob>(
+                    Encoding.UTF8.GetString(data),
+                    new JsonSerializerSettings
+                    {
+                        TypeNameHandling = TypeNameHandling.Auto,
+                    });
+
+            return backupJob;
+        }
+
+        public void SaveBackupJob(FileStream stream)
+        {
+            try
+            {
+                if (!stream.CanWrite)
+                    throw new BackupException("Impossible to save data! Stream closed for writing!");
+
+                string serializedData = JsonConvert.SerializeObject(
+                    this,
+                    Formatting.Indented,
+                    new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.Auto });
+                stream.Write(Encoding.UTF8.GetBytes(serializedData));
+                _logger.LogMessage($"Successfully saved backup job's {_backupJob.BackupJobInfo()} state");
+            }
+            catch (Exception exception)
+            {
+                _logger.LogException(exception);
+                throw;
+            }
+        }
 
         public void AddJobObject(JobObject jobObject)
         {

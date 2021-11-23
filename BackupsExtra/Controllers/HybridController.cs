@@ -8,11 +8,13 @@ using BackupsExtra.Algorithms;
 using BackupsExtra.Extensions;
 using BackupsExtra.Loggers;
 using BackupsExtra.Wrappers.Repositories;
+using Newtonsoft.Json;
 
 namespace BackupsExtra.Controllers
 {
     public class HybridController : IRestorePointController
     {
+        [JsonProperty("algorithm")]
         private readonly IRestorePointsCleaningAlgorithm _algorithm;
 
         public HybridController(
