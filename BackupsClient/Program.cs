@@ -1,41 +1,37 @@
-﻿using System.Linq;
-using Backups.Algorithms;
+﻿using Backups.Algorithms;
 using Backups.Entities;
-using Backups.Repository;
 using BackupsClient.Entities;
+using BackupsExtra.Algorithms;
+using BackupsExtra.Controllers;
+using BackupsExtra.Loggers;
+using BackupsExtra.Wrappers.BackupJob;
+using BackupsExtra.Wrappers.Compressors;
 
 namespace BackupsClient
 {
-    class Program
+    public class Program
     {
         public static void Main()
         {
-            var client = new Client("127.0.0.1", 8888);
-            var repository = new ClientToServerRepository(
-                new ZipArchiveCompressor(), 
+            using var client = new Client("127.0.0.1", 8888);
+            var repository = new ExtendedClientToServerRepository(
+                new ExtendedZipArchiveCompressor(), 
                 ".zip",
                 client);
 
-            var backupJob1 = new BackupJob(repository, new SingleStorageAlgorithm());
+            var backupJob = new ExtendedBackupJob(
+                repository,
+                new SplitStoragesAlgorithm(),
+                new ConsoleLogger(),
+                new ControllerByCount(5, new RestorePointDeleteAlgorithm()));
+            
             var obj1 = new JobObject(@"d:\proj\a.txt");
-            var obj2 = new JobObject(@"d:\proj\b.txt");
+            var obj2 = new JobObject(@"D:\proj\b.txt");
+            backupJob.AddJobObject(obj1);
+            backupJob.AddJobObject(obj2);
             
-            backupJob1.AddJobObject(obj1);
-            backupJob1.AddJobObject(obj2);
-            backupJob1.CreateRestorePoint();
-            backupJob1.DeleteJobObject(obj2);
-            backupJob1.CreateRestorePoint();
-            
-            var backupJob2 = new BackupJob(repository, new SplitStoragesAlgorithm());
-            backupJob2.AddJobObject(obj1);
-            backupJob2.AddJobObject(obj2);
-            backupJob2.CreateRestorePoint();
-            backupJob2.DeleteJobObject(obj2);
-            backupJob2.CreateRestorePoint();
-            backupJob2.AddJobObject(obj2);
-            backupJob2.CreateRestorePoint();
-            
-            backupJob2.DeleteRestorePoint(backupJob2.Backup.RestorePoints.Last());
+            backupJob.CreateRestorePoint();
+            backupJob.RestoreToDifferentLocation(backupJob.Backup.RestorePoints[0], @"d:\testRestore");
         }
     }
 }

@@ -4,13 +4,17 @@ using System.IO;
 using System.Text;
 using Backups.Repository;
 using BackupsServer.DataTypes;
+using Newtonsoft.Json;
 
 namespace BackupsClient.Entities
 {
     public class ClientToServerRepository : IRepositoryWithArchivator
     {
+        [JsonProperty("storageFileExtension")]
         private readonly string _storageFileExtension;
+        [JsonProperty("compressor")]
         private readonly ICompressor _compressor;
+        [JsonProperty("client")]
         private readonly Client _client;
 
         public ClientToServerRepository(

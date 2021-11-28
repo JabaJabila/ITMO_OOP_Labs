@@ -5,5 +5,6 @@
         ReadAndSaveFile,
         DeleteFile,
         CreateDirectory,
+        GetFile,
     }
 }

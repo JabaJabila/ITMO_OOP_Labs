@@ -1,10 +1,12 @@
 ﻿using System.IO;
 using System.IO.Compression;
+using Newtonsoft.Json;
 
 namespace Backups.Repository
 {
     public class ZipArchiveCompressor : ICompressor
     {
+        [JsonProperty("compressionLevel")]
         private readonly CompressionLevel _compressionLevel;
 
         public ZipArchiveCompressor(CompressionLevel compressionLevel = CompressionLevel.Optimal)
