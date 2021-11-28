@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net.Sockets;
+using Newtonsoft.Json;
 
 namespace BackupsClient.Entities
 {
@@ -14,6 +15,7 @@ namespace BackupsClient.Entities
         
         public string Address { get; }
         public int Port { get; }
+        [JsonIgnore]
         public NetworkStream NetworkStream { get; private set; }
 
         public void Connect()

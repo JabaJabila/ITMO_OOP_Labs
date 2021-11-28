@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using Backups.Tools;
+using Newtonsoft.Json;
 
 namespace Backups.Entities
 {
     public class Backup
     {
+        [JsonProperty("restorePoints")]
         private readonly List<RestorePoint> _restorePoints;
 
         internal Backup()
@@ -13,6 +15,13 @@ namespace Backups.Entities
             _restorePoints = new List<RestorePoint>();
         }
 
+        [JsonConstructor]
+        private Backup(List<RestorePoint> restorePoints)
+        {
+            _restorePoints = restorePoints ?? throw new ArgumentNullException(nameof(restorePoints));
+        }
+
+        [JsonIgnore]
         public IReadOnlyList<RestorePoint> RestorePoints => _restorePoints;
 
         internal void AddRestorePoint(RestorePoint restorePoint)

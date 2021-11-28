@@ -2,16 +2,29 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Newtonsoft.Json;
 
 namespace Backups.Repository
 {
     public class LocalMemoryRepository : IRepository
     {
-        private Dictionary<string, List<string>> _memoryRepository;
+        [JsonProperty("memoryRepositoryData")]
+        private Dictionary<string, List<string>> _memoryRepositoryData;
+
+        public LocalMemoryRepository()
+        {
+        }
+
+        [JsonConstructor]
+        private LocalMemoryRepository(Dictionary<string, List<string>> memoryRepositoryData)
+        {
+            _memoryRepositoryData = memoryRepositoryData ??
+                                    throw new ArgumentNullException(nameof(memoryRepositoryData));
+        }
 
         public void CreateBackupJobRepository(Guid backupJobId)
         {
-            _memoryRepository = new Dictionary<string, List<string>>();
+            _memoryRepositoryData = new Dictionary<string, List<string>>();
         }
 
         public bool CheckIfJobObjectExists(string fullName)
@@ -28,7 +41,7 @@ namespace Backups.Repository
                 backupJobId.ToString(),
                 storageId.ToString());
 
-            _memoryRepository[storagePath] = jobObjectsPaths.Select(File.ReadAllText).ToList();
+            _memoryRepositoryData[storagePath] = jobObjectsPaths.Select(File.ReadAllText).ToList();
 
             return storagePath;
         }
@@ -42,20 +55,20 @@ namespace Backups.Repository
                 backupJobId.ToString(),
                 storageId.ToString());
 
-            _memoryRepository[storagePath] = new List<string>(new[] { File.ReadAllText(jobObjectPath) });
+            _memoryRepositoryData[storagePath] = new List<string>(new[] { File.ReadAllText(jobObjectPath) });
 
             return storagePath;
         }
 
         public void DeleteStorages(List<string> storagesNames)
         {
-            storagesNames.ForEach(path => _memoryRepository.Remove(path));
+            storagesNames.ForEach(path => _memoryRepositoryData.Remove(path));
         }
 
         public List<string> ReadFromStorage(string storagePath)
         {
-            return _memoryRepository.ContainsKey(storagePath) ?
-                _memoryRepository[storagePath].ToList() : null;
+            return _memoryRepositoryData.ContainsKey(storagePath) ?
+                _memoryRepositoryData[storagePath].ToList() : null;
         }
     }
 }
