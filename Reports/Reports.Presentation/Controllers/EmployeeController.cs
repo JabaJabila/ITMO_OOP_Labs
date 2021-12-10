@@ -1,12 +1,11 @@
 ﻿using System;
-using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Threading.Tasks;
+using Domain.Entities;
+using Domain.ServicesAbstractions;
 using Microsoft.AspNetCore.Mvc;
-using Reports.DAL.Entities;
-using Reports.Server.Services;
 
-namespace Reports.Server.Controllers
+namespace Reports.Presentation.Controllers
 {
     [ApiController]
     [Route("/employees")]
@@ -26,11 +25,11 @@ namespace Reports.Server.Controllers
         }
 
         [HttpGet]
-        public IActionResult Find([FromQuery] string name, [FromQuery] Guid id)
+        public async Task<IActionResult> Find([FromQuery] string name, [FromQuery] Guid id)
         {
             if (!string.IsNullOrWhiteSpace(name))
             {
-                Employee result = _service.FindByName(name);
+                Employee result = await _service.FindByName(name);
                 if (result != null)
                 {
                     return Ok(result);
@@ -39,9 +38,9 @@ namespace Reports.Server.Controllers
                 return NotFound();
             }
 
-            if (id != Guid.Empty)
+            if (id == Guid.Empty) return StatusCode((int) HttpStatusCode.BadRequest);
             {
-                Employee result = _service.FindById(id);
+                Employee result = await _service.FindById(id);
                 if (result != null)
                 {
                     return Ok(result);
@@ -50,7 +49,6 @@ namespace Reports.Server.Controllers
                 return NotFound();
             }
 
-            return StatusCode((int) HttpStatusCode.BadRequest);
         }
     }
 }

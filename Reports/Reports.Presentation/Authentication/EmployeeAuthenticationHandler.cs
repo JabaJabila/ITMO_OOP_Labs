@@ -3,15 +3,16 @@ using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using Domain.Entities;
+using Infrastructure.DbContext;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Reports.Server.Database;
 
-namespace Reports.Server
+namespace Reports.Presentation.Authentication
 {
     public class EmployeeAuthenticationHandler : AuthenticationHandler<AuthenticationSchemeOptions>
     {
@@ -27,14 +28,14 @@ namespace Reports.Server
             encoder,
             clock)
         {
-            this._context = context;
+            _context = context;
         }
 
         protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
         {
             // skip authentication if endpoint has [AllowAnonymous] attribute
-            var endpoint = Context.GetEndpoint();
-            if (endpoint?.Metadata?.GetMetadata<IAllowAnonymous>() != null)
+            Endpoint endpoint = Context.GetEndpoint();
+            if (endpoint?.Metadata.GetMetadata<IAllowAnonymous>() != null)
                 return AuthenticateResult.NoResult();
 
             if (!Request.Headers.ContainsKey("Authorization"))
@@ -45,17 +46,17 @@ namespace Reports.Server
             {
                 return AuthenticateResult.Fail("Invalid Authorization Header Scheme");
             }
-            if (!Guid.TryParse(authHeader.Parameter, out var employeeId))
+            if (!Guid.TryParse(authHeader.Parameter, out Guid employeeId))
             {
                 return AuthenticateResult.Fail("Invalid Authorization Header Parameter");
             }
 
-            var employee = await _context.Employees.AsNoTracking().SingleOrDefaultAsync(x => x.Id == employeeId);
+            Employee employee = await _context.Employees.AsNoTracking().SingleOrDefaultAsync(x => x.Id == employeeId);
             if (employee == null) {
                 return AuthenticateResult.Fail("Invalid Employee Identity");
             }
 
-            var claims = new[] {
+            Claim[] claims = {
                 new Claim(ClaimTypes.NameIdentifier, employee.Id.ToString()),
                 new Claim(ClaimTypes.Name, employee.Name),
             };

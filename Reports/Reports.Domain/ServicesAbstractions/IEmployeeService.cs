@@ -1,16 +1,16 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Reports.DAL.Entities;
+using Domain.Entities;
 
-namespace Reports.Server.Services
+namespace Domain.ServicesAbstractions
 {
     public interface IEmployeeService
     {
         Task<Employee> Create(string name);
 
-        Employee FindByName(string name);
+        Task<Employee> FindByName(string name);
 
-        Employee FindById(Guid id);
+        Task<Employee> FindById(Guid id);
 
         void Delete(Guid id);
 

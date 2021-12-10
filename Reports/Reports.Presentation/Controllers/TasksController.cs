@@ -2,13 +2,14 @@ using System;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Domain.Entities;
+using Infrastructure.DbContext;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Reports.DAL.Entities;
-using Reports.Server.Database;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
-namespace Reports.Server.Controllers
+namespace Reports.Presentation.Controllers
 {
     [ApiController]
     [Route("/tasks")]
@@ -24,16 +25,16 @@ namespace Reports.Server.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateTask([FromBody] CreateTaskRequestModel requestModel)
         {
-            var employeeId = User.Claims.Single(x => x.Type == ClaimTypes.NameIdentifier).Value;
-            var employee = await _context.Employees.SingleAsync(x => x.Id == Guid.Parse(employeeId));
-            var task = await _context.Tasks.AddAsync(new TaskModel
+            string employeeId = User.Claims.Single(x => x.Type == ClaimTypes.NameIdentifier).Value;
+            Employee employee = await _context.Employees.SingleAsync(x => x.Id == Guid.Parse(employeeId));
+            EntityEntry<TaskModel> task = await _context.Tasks.AddAsync(new TaskModel
             {
                 Id = Guid.NewGuid(),
                 AssignedEmployee = employee
             });
             await _context.SaveChangesAsync();
 
-            return this.Ok(task.Entity);
+            return Ok(task.Entity);
         }
     }
 

@@ -1,18 +1,16 @@
+using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
-using Reports.DAL.Entities;
 
-namespace Reports.Server.Database
+namespace Infrastructure.DbContext
 {
-    public class ReportsDatabaseContext : DbContext
+    public sealed class ReportsDatabaseContext : Microsoft.EntityFrameworkCore.DbContext
     {
         public ReportsDatabaseContext(DbContextOptions<ReportsDatabaseContext> options) : base(options)
         {
-            // this.Database.EnsureDeleted();
-            this.Database.EnsureCreated();
+            Database.EnsureCreated();
         }
 
         public DbSet<Employee> Employees { get; set; }
-
         public DbSet<TaskModel> Tasks { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

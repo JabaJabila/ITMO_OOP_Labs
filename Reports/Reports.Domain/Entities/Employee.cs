@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Reports.DAL.Entities
+namespace Domain.Entities
 {
     public class Employee
     {
