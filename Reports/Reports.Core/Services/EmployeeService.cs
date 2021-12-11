@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Domain.Entities;
-using Domain.ServicesAbstractions;
+using Core.Domain.Entities;
+using Core.Domain.ServicesAbstractions;
 
-namespace Application.Services
+namespace Core.Services
 {
     public class EmployeeService : IEmployeeService
     {

@@ -1,5 +1,5 @@
-using Application.Services;
-using Domain.ServicesAbstractions;
+using Core.Domain.ServicesAbstractions;
+using Core.Services;
 using Infrastructure.DbContext;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;

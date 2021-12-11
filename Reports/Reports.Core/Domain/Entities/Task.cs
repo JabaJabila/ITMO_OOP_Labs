@@ -1,8 +1,8 @@
 using System;
 
-namespace Domain.Entities
+namespace Core.Domain.Entities
 {
-    public class TaskModel
+    public class Task
     {
         public Guid Id { get; set; }
 

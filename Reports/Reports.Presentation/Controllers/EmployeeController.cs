@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Net;
 using System.Threading.Tasks;
-using Domain.Entities;
-using Domain.ServicesAbstractions;
+using Core.Domain.Entities;
+using Core.Domain.ServicesAbstractions;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Reports.Presentation.Controllers

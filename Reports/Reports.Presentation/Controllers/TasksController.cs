@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Domain.Entities;
+using Core.Domain.Entities;
 using Infrastructure.DbContext;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -27,7 +27,7 @@ namespace Reports.Presentation.Controllers
         {
             string employeeId = User.Claims.Single(x => x.Type == ClaimTypes.NameIdentifier).Value;
             Employee employee = await _context.Employees.SingleAsync(x => x.Id == Guid.Parse(employeeId));
-            EntityEntry<TaskModel> task = await _context.Tasks.AddAsync(new TaskModel
+            EntityEntry<Task> task = await _context.Tasks.AddAsync(new Task
             {
                 Id = Guid.NewGuid(),
                 AssignedEmployee = employee

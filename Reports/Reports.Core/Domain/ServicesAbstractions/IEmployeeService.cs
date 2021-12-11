@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Domain.Entities;
+using Core.Domain.Entities;
 
-namespace Domain.ServicesAbstractions
+namespace Core.Domain.ServicesAbstractions
 {
     public interface IEmployeeService
     {
