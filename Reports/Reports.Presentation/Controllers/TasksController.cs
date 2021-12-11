@@ -22,20 +22,20 @@ namespace Reports.Presentation.Controllers
             _context = context;
         }
 
-        [HttpPost]
-        public async Task<IActionResult> CreateTask([FromBody] CreateTaskRequestModel requestModel)
-        {
-            string employeeId = User.Claims.Single(x => x.Type == ClaimTypes.NameIdentifier).Value;
-            Employee employee = await _context.Employees.SingleAsync(x => x.Id == Guid.Parse(employeeId));
-            EntityEntry<Task> task = await _context.Tasks.AddAsync(new Task
-            {
-                Id = Guid.NewGuid(),
-                AssignedEmployee = employee
-            });
-            await _context.SaveChangesAsync();
-
-            return Ok(task.Entity);
-        }
+        // [HttpPost]
+        // public async Task<IActionResult> CreateTask([FromBody] CreateTaskRequestModel requestModel)
+        // {
+        //     string employeeId = User.Claims.Single(x => x.Type == ClaimTypes.NameIdentifier).Value;
+        //     Employee employee = await _context.Employees.SingleAsync(x => x.Id == Guid.Parse(employeeId));
+        //     EntityEntry<JobTask> task = await _context.Tasks.AddAsync(new JobTask
+        //     {
+        //         Id = Guid.NewGuid(),
+        //         AssignedEmployee = employee
+        //     });
+        //     await _context.SaveChangesAsync();
+        //
+        //     return Ok(task.Entity);
+        // }
     }
 
     public class CreateTaskRequestModel

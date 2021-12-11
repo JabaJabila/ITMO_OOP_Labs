@@ -12,12 +12,12 @@ namespace Infrastructure.DbContext
         }
 
         public DbSet<Employee> Employees { get; set; }
-        public DbSet<Task> Tasks { get; set; }
+        public DbSet<JobTask> Tasks { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Employee>().ToTable("Employees");
-            modelBuilder.Entity<Task>().HasOne(model => model.AssignedEmployee);
+            modelBuilder.Entity<JobTask>().HasOne(model => model.AssignedEmployee);
             base.OnModelCreating(modelBuilder);
         }
     }

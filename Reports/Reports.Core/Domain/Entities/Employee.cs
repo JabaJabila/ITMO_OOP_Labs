@@ -57,8 +57,8 @@ namespace Core.Domain.Entities
             if (subordinate == null)
                 throw new ArgumentNullException(nameof(subordinate));
 
-            _subordinates.Remove(subordinate);
-            subordinate._supervisor = null;
+            if (_subordinates.Remove(subordinate))
+                subordinate._supervisor = null;
         }
 
         public void Delete()
