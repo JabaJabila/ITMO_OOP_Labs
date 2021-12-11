@@ -21,7 +21,7 @@ namespace Reports.Presentation.Controllers
         [HttpPost]
         public async Task<Employee> Create([FromQuery] string name)
         {
-            return await _service.Create(name);
+            return await _service.CreateEmployee(name);
         }
 
         [HttpGet]
@@ -40,7 +40,7 @@ namespace Reports.Presentation.Controllers
 
             if (id == Guid.Empty) return StatusCode((int) HttpStatusCode.BadRequest);
             {
-                Employee result = await _service.FindById(id);
+                Employee result = await _service.GetById(id);
                 if (result != null)
                 {
                     return Ok(result);

@@ -10,10 +10,21 @@ namespace Core.Domain.Entities
         private readonly List<JobTaskChange> _changes;
         private Employee _assignedEmployee;
         private JobTaskState _state;
+        private string _description;
         
         public Guid Id { get; }
         public string Name { get; }
         public DateTime CreationTime { get; }
+
+        public string Description
+        {
+            get => _description;
+            set
+            {
+                _description = value ?? throw new ArgumentNullException(nameof(value));
+                CommitChange(new DescriptionChange(value));
+            }
+        }
 
         public JobTaskState CurrentState
         {
@@ -38,9 +49,10 @@ namespace Core.Domain.Entities
             } 
         }
         
-        public JobTask(string name, Employee employee)
+        public JobTask(string name, Employee employee, string description)
         {
             Name = name ?? throw new ArgumentNullException(nameof(name));
+            Description = description;
             AssignedEmployee = employee;
             _changes = new List<JobTaskChange>();
             CurrentState = JobTaskState.Open;

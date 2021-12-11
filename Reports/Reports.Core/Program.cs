@@ -1,4 +1,4 @@
-﻿namespace Application
+﻿namespace Core
 {
     class Program
     {
