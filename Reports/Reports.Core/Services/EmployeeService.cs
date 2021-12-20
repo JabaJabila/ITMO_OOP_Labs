@@ -3,66 +3,76 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Core.Domain.Entities;
 using Core.Domain.ServicesAbstractions;
+using Core.Domain.Tools;
+using Core.RepositoryAbstractions;
 
 namespace Core.Services
 {
     public class EmployeeService : IEmployeeService
     {
+        private readonly IEmployeeRepository _repository;
+        
+        public EmployeeService(IEmployeeRepository repository)
+        {
+            _repository = repository ?? throw new ArgumentNullException(nameof(repository));
+        } 
+        
         public async Task<Employee> CreateEmployee(string name)
         {
-            throw new NotImplementedException();
-            // var employee = new Employee(Guid.NewGuid(), name);
-            // await _context.Employees.AddAsync(employee);
-            // await _context.SaveChangesAsync();
-            // return employee;
+            var employee = new Employee(name);
+            return await _repository.Add(employee);
         }
 
         public async Task<Employee> FindByName(string name)
         {
-            throw new NotImplementedException();
-            // return await _context.Employees.FirstOrDefaultAsync(
-            //     employee => employee.Name == name);
+            if (name == null)
+                throw new ArgumentNullException(nameof(name));
+            
+            return await _repository.FindByName(name);
         }
 
         public async Task<Employee> GetById(Guid id)
         {
-            throw new NotImplementedException();
-            // return await _context.Employees.FindAsync(id);
+            return await _repository.GetById(id);
         }
 
-        public Task<List<Employee>> GetAll()
+        public async Task<IReadOnlyCollection<Employee>> GetAll()
         {
-            throw new NotImplementedException();
+            return await _repository.GetAll();
         }
 
-        Task IEmployeeService.Delete(Guid id)
+        public async Task<Employee> Delete(Guid id)
         {
-            throw new NotImplementedException();
+            Employee employeeToDelete = await _repository.GetById(id);
+            if (employeeToDelete == null)
+                return null;
+
+            if (employeeToDelete.SupervisorId != null)
+            {
+                Employee supervisor = await _repository.GetById((Guid)employeeToDelete.SupervisorId);
+                if (supervisor == null)
+                    throw new ReportsAppException("Employee has unknown supervisor. Data can be corrupted!");
+
+            }
+
+            await _repository.Delete(id);
+            await _repository.SaveChanges();
+            return employeeToDelete;
         }
 
-        public Task AddSubordinate(Employee currentEmployee, Employee subordinate)
+        public async Task<Employee> SetSupervisor(Guid currentEmployeeId, Guid supervisorId)
         {
-            throw new NotImplementedException();
-        }
+            Employee currentEmployee = await _repository.GetById(currentEmployeeId);
+            Employee supervisor = await _repository.GetById(supervisorId);
 
-        public Task DeleteSubordinate(Employee currentEmployee, Employee subordinate)
-        {
-            throw new NotImplementedException();
-        }
+            if (currentEmployee == null)
+                throw new ReportsAppException($"Employee {currentEmployeeId} not found!");
+            if (supervisor == null)
+                throw new ReportsAppException($"Employee {supervisorId} not found!");
 
-        public Task SetSupervisor(Employee currentEmployee, Employee supervisor)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Delete(Guid id)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Employee Update(Employee entity)
-        {
-            throw new NotImplementedException();
+            currentEmployee.SupervisorId = supervisorId;
+            await _repository.SaveChanges();
+            return currentEmployee;
         }
     }
 }

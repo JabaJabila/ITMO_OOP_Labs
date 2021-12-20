@@ -1,6 +1,8 @@
 using Core.Domain.ServicesAbstractions;
+using Core.RepositoryAbstractions;
 using Core.Services;
 using Infrastructure.DbContext;
+using Infrastructure.Repositories;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -20,8 +22,7 @@ namespace Reports.Presentation
         }
 
         public IConfiguration Configuration { get; }
-
-        // This method gets called by the runtime. Use this method to add services to the container.
+        
         public void ConfigureServices(IServiceCollection services)
         {
             services
@@ -39,6 +40,8 @@ namespace Reports.Presentation
             {
                 opt.UseSqlServer(Configuration.GetConnectionString("MyServer"));
             });
+
+            services.AddScoped<IEmployeeRepository, EmployeeRepository>();
             services.AddScoped<IEmployeeService, EmployeeService>();
         }
 

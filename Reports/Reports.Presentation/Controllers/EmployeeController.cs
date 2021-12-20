@@ -24,31 +24,68 @@ namespace Reports.Presentation.Controllers
             return await _service.CreateEmployee(name);
         }
 
-        [HttpGet]
-        public async Task<IActionResult> Find([FromQuery] string name, [FromQuery] Guid id)
+        [HttpGet("get-one")]
+        public async Task<IActionResult> Find([FromQuery] Guid id, [FromQuery] string name)
         {
-            if (!string.IsNullOrWhiteSpace(name))
+            Employee result;
+            if (id != Guid.Empty)
             {
-                Employee result = await _service.FindByName(name);
+                result = await _service.GetById(id);
                 if (result != null)
-                {
                     return Ok(result);
-                }
-
                 return NotFound();
             }
 
-            if (id == Guid.Empty) return StatusCode((int) HttpStatusCode.BadRequest);
+            if (string.IsNullOrWhiteSpace(name)) return StatusCode((int) HttpStatusCode.BadRequest);
+            result = await _service.FindByName(name);
+            if (result != null)
+                return Ok(result);
+            
+            return NotFound();
+        }
+        
+        [HttpGet("get-all")]
+        public async Task<IActionResult> GetAll()
+        {
+            return Ok(await _service.GetAll());
+        }
+
+        [HttpDelete]
+        public async Task<IActionResult> Delete([FromQuery] Guid id)
+        {
+            if (id == Guid.Empty) return StatusCode((int)HttpStatusCode.BadRequest);
+            try
             {
-                Employee result = await _service.GetById(id);
-                if (result != null)
-                {
-                    return Ok(result);
-                }
-
-                return NotFound();
+                Employee result = await _service.Delete(id);
+                if (result == null)
+                    return NotFound();
+                return Ok(result);
             }
+            catch (Exception)
+            {
+                return StatusCode((int) HttpStatusCode.BadRequest);
+            }
+        }
 
+        [HttpPatch]
+        public async Task<IActionResult> SetSupervisor(
+            [FromQuery] Guid currentEmployeeId,
+            [FromQuery] Guid supervisorId)
+        {
+            if (currentEmployeeId == Guid.Empty || supervisorId == Guid.Empty)
+                return StatusCode((int) HttpStatusCode.BadRequest);
+
+            try
+            {
+                Employee result = await _service.SetSupervisor(currentEmployeeId, supervisorId);
+                if (result == null)
+                    return NotFound();
+                return Ok(result);
+            }
+            catch (Exception)
+            {
+                return StatusCode((int) HttpStatusCode.BadRequest);
+            }
         }
     }
 }

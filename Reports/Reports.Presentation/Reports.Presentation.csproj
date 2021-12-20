@@ -16,9 +16,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Content Update="employees.json">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </Content>
       <Content Include="..\.editorconfig">
         <Link>.editorconfig</Link>
       </Content>

@@ -10,8 +10,7 @@ namespace Core.Domain.Entities
         public string Name { get; set; }
 
         public EmployeeStatus Status { get; set; }
-        public Employee Supervisor { get; set; }
-        public List<Employee> Subordinates { get; private init; }
+        public Guid? SupervisorId { get; set; }
 
         private Employee()
         {
@@ -20,7 +19,6 @@ namespace Core.Domain.Entities
         public Employee(string name)
         {
             Name = name ?? throw new ArgumentNullException(nameof(name));
-            Subordinates = new List<Employee>();
             Status = EmployeeStatus.Working;
         }
     }

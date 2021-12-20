@@ -10,10 +10,8 @@ namespace Core.Domain.ServicesAbstractions
         Task<Employee> CreateEmployee(string name);
         Task<Employee> FindByName(string name);
         Task<Employee> GetById(Guid id);
-        Task<List<Employee>> GetAll();
-        Task Delete(Guid id);
-        Task AddSubordinate(Employee currentEmployee, Employee subordinate);
-        Task DeleteSubordinate(Employee currentEmployee, Employee subordinate);
-        Task SetSupervisor(Employee currentEmployee, Employee supervisor);
+        Task<IReadOnlyCollection<Employee>> GetAll();
+        Task<Employee> Delete(Guid id);
+        Task<Employee> SetSupervisor(Guid currentEmployeeId, Guid supervisorId);
     }
 }
