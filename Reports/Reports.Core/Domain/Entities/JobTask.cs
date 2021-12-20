@@ -1,76 +1,32 @@
 using System;
 using System.Collections.Generic;
+using Core.Domain.Entities.TaskChanges;
 using Core.Domain.Tools;
-using Core.Domain.Tools.TaskChanges;
 
 namespace Core.Domain.Entities
 {
     public class JobTask
     {
-        private readonly List<JobTaskChange> _changes;
-        private Employee _assignedEmployee;
-        private JobTaskState _state;
-        private string _description;
-        
-        public Guid Id { get; }
-        public string Name { get; }
-        public DateTime CreationTime { get; }
+        public Guid Id { get; private init; }
+        public string Name { get; private init; }
+        public DateTime CreationTime { get; private init; }
+        public string Description { get; set; }
+        public JobTaskState CurrentState { get; set; }
+        public List<JobTaskChange> Changes { get; private init; }
+        public Employee AssignedEmployee { get; set; }
 
-        public string Description
+        private JobTask()
         {
-            get => _description;
-            set
-            {
-                _description = value ?? throw new ArgumentNullException(nameof(value));
-                CommitChange(new DescriptionChange(value));
-            }
-        }
-
-        public JobTaskState CurrentState
-        {
-            get => _state;
-            set
-            {
-                if (CurrentState == value) return;
-                _state = value; 
-                CommitChange(new StateChange(value));
-            }
-        }
-        public IReadOnlyCollection<JobTaskChange> Changes => _changes;
-
-        public Employee AssignedEmployee
-        {
-            get => _assignedEmployee;
-            set
-            {
-                if (_assignedEmployee == value) return;
-                _assignedEmployee = value ?? throw new ArgumentNullException(nameof(value));
-                CommitChange(new AssignedEmployeeChange(value));
-            } 
         }
         
         public JobTask(string name, Employee employee, string description)
         {
             Name = name ?? throw new ArgumentNullException(nameof(name));
-            Description = description;
-            AssignedEmployee = employee;
-            _changes = new List<JobTaskChange>();
+            Description = description ?? throw new ArgumentNullException(nameof(description));
+            AssignedEmployee = employee ?? throw new ArgumentNullException(nameof(employee));
+            Changes = new List<JobTaskChange>();
             CurrentState = JobTaskState.Open;
             CreationTime = DateTime.Now;
-            Id = Guid.NewGuid();
-        }
-
-        public void AddComment(CommentChange comment)
-        {
-            CommitChange(comment);
-        }
-        
-        private void CommitChange(JobTaskChange change)
-        {
-            if (change == null)
-                throw new ArgumentNullException(nameof(change));
-            
-            _changes.Add(change);
         }
     }
 }

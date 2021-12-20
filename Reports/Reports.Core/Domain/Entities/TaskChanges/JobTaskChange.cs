@@ -1,10 +1,10 @@
 ﻿using System;
 
-namespace Core.Domain.Tools.TaskChanges
+namespace Core.Domain.Entities.TaskChanges
 {
     public abstract class JobTaskChange
     {
-        public DateTime ChangeTime { get; }
+        public DateTime ChangeTime { get; private init; }
 
         protected JobTaskChange()
         {

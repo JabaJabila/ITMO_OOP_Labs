@@ -1,12 +1,15 @@
 ﻿using System;
-using Core.Domain.Entities;
 
-namespace Core.Domain.Tools.TaskChanges
+namespace Core.Domain.Entities.TaskChanges
 {
     public class CommentChange : JobTaskChange
     {
-        public Employee Author { get; }
-        public string Message { get; }
+        public Employee Author { get; private init; }
+        public string Message { get; private init; }
+
+        private CommentChange()
+        {
+        }
 
         public CommentChange(Employee author, string message)
         {

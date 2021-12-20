@@ -1,7 +1,6 @@
 using Core.Domain.ServicesAbstractions;
 using Core.Services;
 using Infrastructure.DbContext;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -10,7 +9,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
-using Reports.Presentation.Authentication;
 
 namespace Reports.Presentation
 {
@@ -37,10 +35,6 @@ namespace Reports.Presentation
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Reports.WebUI", Version = "v1" });
             });
 
-            services
-                .AddAuthentication("EmployeeAuthorization")
-                .AddScheme<AuthenticationSchemeOptions, EmployeeAuthenticationHandler>("EmployeeAuthorization", null);
-
             services.AddDbContext<ReportsDatabaseContext>(opt =>
             {
                 opt.UseSqlServer(Configuration.GetConnectionString("MyServer"));
@@ -60,9 +54,6 @@ namespace Reports.Presentation
 
             app.UseHttpsRedirection();
             app.UseRouting();
-
-            app.UseAuthentication();
-            app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {

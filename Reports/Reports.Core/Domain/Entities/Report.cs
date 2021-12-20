@@ -6,25 +6,16 @@ namespace Core.Domain.Entities
 {
     public class Report
     {
-        private readonly List<JobTask> _tasks;
-        private string _description;
-        
-        public ReportType Type { get; }
-        public DateTime CreationTime { get; }
-        public Employee AssignedEmployee { get; }
+        public Guid Id { get; private init; }
+        public ReportType Type { get; private init; }
+        public DateTime CreationTime { get; private init; }
+        public Employee AssignedEmployee { get; private init; }
         public ReportState State { get; set; }
-        public IReadOnlyCollection<JobTask> Tasks => _tasks;
+        public List<JobTask> Tasks { get; private init; }
+        public string Description { get; set; }
 
-        public string Description
+        private Report()
         {
-            get => _description;
-            set
-            {
-                if (State == ReportState.Finished)
-                    throw new ReportsAppException("You can't make changes in finished report!");
-
-                _description = value;
-            }
         }
 
         public Report(Employee employee, ReportType type, string description = null, List<JobTask> tasks = null)
@@ -33,36 +24,13 @@ namespace Core.Domain.Entities
             Type = type;
             Description = description;
             CreationTime = DateTime.Now;
-            _tasks = new List<JobTask>();
+            Tasks = new List<JobTask>();
 
             tasks?.ForEach(task =>
             {
                 if (task != null)
-                    _tasks.Add(task);
+                    Tasks.Add(task);
             });
-        }
-
-        public void AddTask(JobTask task)
-        {
-            if (task == null)
-                throw new ArgumentNullException(nameof(task));
-            
-            if (State == ReportState.Finished)
-                throw new ReportsAppException("You can't make changes in finished report!");
-            
-            if (!_tasks.Contains(task))
-                _tasks.Add(task);
-        }
-
-        public void DeleteTask(JobTask task)
-        {
-            if (task == null)
-                throw new ArgumentNullException(nameof(task));
-            
-            if (State == ReportState.Finished)
-                throw new ReportsAppException("You can't make changes in finished report!");
-
-            _tasks.Remove(task);
         }
     }
 }
