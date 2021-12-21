@@ -75,7 +75,7 @@ namespace Core.Services
             if (employee == null) throw new ArgumentNullException(nameof(employee));
             return (await _reportRepository.GetAll())
                 .Where(r => r.State == ReportState.Finished &&
-                            r.AssignedEmployee.Id == employee.Id &&
+                            r.AssignedEmployee.SupervisorId == employee.Id &&
                             DateTime.Now <= r.CreationTime.AddDays(countOfDays))
                 .ToList();
         }
@@ -89,7 +89,7 @@ namespace Core.Services
             
             var subordinatesWithReport = (await _reportRepository.GetAll())
                 .Where(r => r.State == ReportState.Finished &&
-                            r.AssignedEmployee.Id == employee.Id &&
+                            r.AssignedEmployee.SupervisorId == employee.Id &&
                             DateTime.Now <= r.CreationTime.AddDays(countOfDays))
                 .Select(r => r.AssignedEmployee)
                 .ToList();

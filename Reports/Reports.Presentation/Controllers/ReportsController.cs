@@ -47,11 +47,14 @@ namespace Reports.Presentation.Controllers
         [HttpGet("by-id")]
         public async Task<IActionResult> GetReport(Guid id)
         {
-            if (id == Guid.Empty) return StatusCode((int)HttpStatusCode.BadRequest);
-            Report result = await _reportsService.GetById(id);
-            if (result != null)
-                return Ok(result);
-            return NotFound();
+            try
+            {
+                return Ok(await _reportsService.GetById(id));
+            }
+            catch (Exception)
+            {
+                return NotFound();
+            }
         }
         
         [HttpPost]

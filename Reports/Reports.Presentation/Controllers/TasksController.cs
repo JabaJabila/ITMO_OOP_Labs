@@ -31,10 +31,14 @@ namespace Reports.Presentation.Controllers
             JobTask result;
             if (id != Guid.Empty)
             {
-                result = await _taskService.GetById(id);
-                if (result != null)
-                    return Ok(result);
-                return NotFound();
+                try
+                {
+                    return Ok(await _taskService.GetById(id));
+                }
+                catch (Exception)
+                {
+                    return NotFound();
+                }
             }
 
             if (!string.IsNullOrWhiteSpace(name))

@@ -33,7 +33,10 @@ namespace Infrastructure.Repositories
 
         public async Task<Report> GetById(Guid id)
         {
-            return await _context.Reports.FindAsync(id);
+            Report report = await _context.Reports.FindAsync(id);
+            await _context.Entry(report).Reference(r => r.AssignedEmployee).LoadAsync();
+            await _context.Entry(report).Collection(r => r.Tasks).LoadAsync();
+            return report;
         }
 
         public async Task<Report> Add(Report entity)

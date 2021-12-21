@@ -32,7 +32,9 @@ namespace Infrastructure.Repositories
 
         public async Task<JobTaskChange> GetById(Guid id)
         {
-            return await _context.TaskChanges.FindAsync(id);
+            JobTaskChange change = await _context.TaskChanges.FindAsync(id);
+            await _context.Entry(change).Reference(c => c.Author).LoadAsync();
+            return change;
         }
 
         public async Task<JobTaskChange> Add(JobTaskChange entity)
