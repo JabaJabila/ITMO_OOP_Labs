@@ -1,6 +1,8 @@
 using Core.Domain.Entities;
 using Core.Domain.Entities.TaskChanges;
+using Core.Domain.Tools;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Infrastructure.DbContext
 {
@@ -33,6 +35,22 @@ namespace Infrastructure.DbContext
 
             modelBuilder.Entity<JobTaskChange>()
                 .HasOne(c => c.Author);
+
+            modelBuilder.Entity<Employee>()
+                .Property(e => e.Status)
+                .HasConversion(new EnumToStringConverter<EmployeeStatus>());
+            
+            modelBuilder.Entity<JobTask>()
+                .Property(t => t.CurrentState)
+                .HasConversion(new EnumToStringConverter<JobTaskState>());
+            
+            modelBuilder.Entity<Report>()
+                .Property(r => r.State)
+                .HasConversion(new EnumToStringConverter<ReportState>());
+            
+            modelBuilder.Entity<Report>()
+                .Property(r => r.Type)
+                .HasConversion(new EnumToStringConverter<ReportType>());
             
             modelBuilder.Entity<Employee>().ToTable("Employees");
             modelBuilder.Entity<JobTask>().ToTable("JobTasks");
