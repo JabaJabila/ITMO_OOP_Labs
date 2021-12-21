@@ -54,8 +54,11 @@ namespace Infrastructure.DbContext
             
             modelBuilder.Entity<Employee>().ToTable("Employees");
             modelBuilder.Entity<JobTask>().ToTable("JobTasks");
-            modelBuilder.Entity<JobTaskChange>().ToTable("TaskChanges");
             modelBuilder.Entity<Report>().ToTable("Reports");
+            modelBuilder.Entity<AssignedEmployeeChange>().ToTable("TaskChanges");
+            modelBuilder.Entity<CommentChange>().ToTable("TaskChanges");
+            modelBuilder.Entity<DescriptionChange>().ToTable("TaskChanges");
+            modelBuilder.Entity<StateChange>().ToTable("TaskChanges");
             
             base.OnModelCreating(modelBuilder);
         }

@@ -15,7 +15,7 @@ namespace Reports.Presentation.Controllers
 
         public EmployeeController(IEmployeeService service)
         {
-            _service = service;
+            _service = service ?? throw new ArgumentNullException(nameof(service));
         }
 
         [HttpPost]

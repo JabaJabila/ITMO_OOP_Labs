@@ -27,6 +27,11 @@ namespace Core.Services
                 .ToList();
         }
 
+        public async Task<Report> GetById(Guid id)
+        {
+            return await _reportRepository.GetById(id);
+        }
+
         public async Task<Report> CreateReport(Employee employee, ReportType type)
         {
             var report = new Report(employee, type);

@@ -10,7 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
-using Newtonsoft.Json;
+
 
 namespace Reports.Presentation
 {
@@ -25,12 +25,6 @@ namespace Reports.Presentation
         
         public void ConfigureServices(IServiceCollection services)
         {
-            services
-                .AddControllers()
-                .AddNewtonsoftJson(options =>
-                {
-                    options.SerializerSettings.Formatting = Formatting.Indented;
-                });
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Reports.WebUI", Version = "v1" });
@@ -43,9 +37,15 @@ namespace Reports.Presentation
 
             services.AddScoped<IEmployeeRepository, EmployeeRepository>();
             services.AddScoped<IEmployeeService, EmployeeService>();
+            services.AddScoped<IJobTaskRepository, JobTaskRepository>();
+            services.AddScoped<ITaskChangesRepository, TaskChangesRepository>();
+            services.AddScoped<IJobTaskService, JobTaskService>();
+            services.AddScoped<IReportRepository, ReportRepository>();
+            services.AddScoped<IReportService, ReportService>();
+            
+            services.AddControllers();
         }
-
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())

@@ -9,6 +9,7 @@ namespace Core.Domain.ServicesAbstractions
     public interface IReportService
     {
         Task<IReadOnlyCollection<Report>> GetReports(Employee employee);
+        Task<Report> GetById(Guid id);
         Task<Report> CreateReport(Employee employee, ReportType type);
         Task<Report> AddTaskToReport(Report report, JobTask task);
         Task<Report> SetDescription(Report report, string description);

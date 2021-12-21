@@ -93,6 +93,7 @@ namespace Core.Services
         public async Task<JobTask> ChangeState(JobTask task, JobTaskState state)
         {
             if (task == null) throw new ArgumentNullException(nameof(task));
+            if (task.CurrentState == state) return task;
             task.CurrentState = state;
             var change = new StateChange(task.AssignedEmployee, state);
             task.Changes.Add(change);
@@ -105,8 +106,10 @@ namespace Core.Services
         public async Task<JobTask> ChangeAssignedEmployee(JobTask task, Employee employee)
         {
             if (task == null) throw new ArgumentNullException(nameof(task));
+            if (employee == null) throw new ArgumentNullException(nameof(employee));
+            if (task.AssignedEmployee.Id == employee.Id) return task;
             var change = new AssignedEmployeeChange(task.AssignedEmployee, employee);
-            task.AssignedEmployee = employee ?? throw new ArgumentNullException(nameof(employee));
+            task.AssignedEmployee = employee;
             task.Changes.Add(change);
             await _changesRepository.Add(change);
             await _changesRepository.SaveChanges();
