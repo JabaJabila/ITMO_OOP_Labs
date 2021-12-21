@@ -8,12 +8,12 @@ namespace Core.Domain.ServicesAbstractions
 {
     public interface IReportService
     {
-        Task<List<Report>> GetReports(Employee employee);
+        Task<IReadOnlyCollection<Report>> GetReports(Employee employee);
         Task<Report> CreateReport(Employee employee, ReportType type);
-        Task AddTaskToReport(Report report, JobTask task);
-        Task SetDescription(Report report, string description);
-        Task ChangeState(Report report, ReportState state);
-        Task<List<Report>> GetSubordinatesReportsForPeriod(Employee employee, TimeSpan period);
-        Task<List<Employee>> GetSubordinatesWithoutReportsForPeriod(Employee employee, TimeSpan period);
+        Task<Report> AddTaskToReport(Report report, JobTask task);
+        Task<Report> SetDescription(Report report, string description);
+        Task<Report> ChangeState(Report report, ReportState state);
+        Task<IReadOnlyCollection<Report>> GetSubordinatesReportsForPeriod(Employee employee, uint countOfDays);
+        Task<IReadOnlyCollection<Employee>> GetSubordinatesWithoutReportsForPeriod(Employee employee, uint countOfDays);
     }
 }

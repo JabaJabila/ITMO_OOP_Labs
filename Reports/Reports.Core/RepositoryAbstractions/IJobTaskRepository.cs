@@ -1,8 +1,10 @@
-﻿using Core.Domain.Entities;
+﻿using System.Threading.Tasks;
+using Core.Domain.Entities;
 
 namespace Core.RepositoryAbstractions
 {
     public interface IJobTaskRepository : IRepository<JobTask>
     {
+        Task<JobTask> FindByName(string name);
     }
 }

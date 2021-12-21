@@ -8,18 +8,18 @@ namespace Core.Domain.ServicesAbstractions
 {
     public interface IJobTaskService
     {
-        Task<List<JobTask>> GetAll();
+        Task<IReadOnlyCollection<JobTask>> GetAll();
         Task<JobTask> GetById(Guid id);
         Task<JobTask> FindByName(string name);
         Task<JobTask> FindByCreationTime(DateTime dateTime);
         Task<JobTask> FindByLastChangeTime(DateTime dateTime);
-        Task<List<JobTask>> FindAssignedTasks(Employee employee);
-        Task<List<JobTask>> FindContributedTasks(Employee employee);
-        Task<List<JobTask>> FindAssignedToSubordinatesTasks(Employee employee);
-        Task<JobTask> CreateTask(string name, Employee assignedEmployee);
-        Task ChangeDescription(JobTask task, string description);
-        Task ChangeState(JobTask task, JobTaskState state);
-        Task ChangeAssignedEmployee(JobTask task, Employee employee);
-        Task AddComment(JobTask task, Employee author, string message);
+        Task<IReadOnlyCollection<JobTask>> FindAssignedTasks(Employee employee);
+        Task<IReadOnlyCollection<JobTask>> FindContributedTasks(Employee employee);
+        Task<IReadOnlyCollection<JobTask>> FindAssignedToSubordinatesTasks(Employee employee);
+        Task<JobTask> CreateTask(string name, Employee assignedEmployee, string description);
+        Task<JobTask> ChangeDescription(JobTask task, string description);
+        Task<JobTask> ChangeState(JobTask task, JobTaskState state);
+        Task<JobTask> ChangeAssignedEmployee(JobTask task, Employee employee);
+        Task<JobTask> AddComment(JobTask task, Employee author, string message);
     }
 }

@@ -10,7 +10,8 @@ namespace Core.Domain.Entities.TaskChanges
         {
         }
         
-        public DescriptionChange(string newDescription)
+        public DescriptionChange(Employee author, string newDescription)
+            : base(author)
         {
             NewDescription = newDescription ?? throw new ArgumentNullException(nameof(newDescription));
         }

@@ -6,7 +6,7 @@ using Core.RepositoryAbstractions;
 
 namespace Infrastructure.Repositories
 {
-    public class JobTaskRepository : IJobTaskRepository
+    public sealed class JobTaskRepository : IJobTaskRepository
     {
         public void Dispose()
         {
@@ -39,6 +39,11 @@ namespace Infrastructure.Repositories
         }
 
         public Task SaveChanges()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<JobTask> FindByName(string name)
         {
             throw new NotImplementedException();
         }

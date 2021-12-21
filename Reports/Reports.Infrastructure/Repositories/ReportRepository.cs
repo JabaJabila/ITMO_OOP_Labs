@@ -6,7 +6,7 @@ using Core.RepositoryAbstractions;
 
 namespace Infrastructure.Repositories
 {
-    public class ReportRepository : IReportRepository
+    public sealed class ReportRepository : IReportRepository
     {
         public void Dispose()
         {

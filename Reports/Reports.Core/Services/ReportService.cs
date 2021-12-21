@@ -1,47 +1,99 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Core.Domain.Entities;
 using Core.Domain.ServicesAbstractions;
 using Core.Domain.Tools;
+using Core.RepositoryAbstractions;
 
 namespace Core.Services
 {
     public class ReportService : IReportService
     {
-        public Task<List<Report>> GetReports(Employee employee)
+        private readonly IReportRepository _reportRepository;
+        private readonly IEmployeeRepository _employeeRepository;
+
+        public ReportService(IReportRepository reportRepository, IEmployeeRepository employeeRepository)
         {
-            throw new NotImplementedException();
+            _reportRepository = reportRepository ?? throw new ArgumentNullException(nameof(reportRepository));
+            _employeeRepository = employeeRepository ?? throw new ArgumentNullException(nameof(employeeRepository));
+        }
+        
+        public async Task<IReadOnlyCollection<Report>> GetReports(Employee employee)
+        {
+            return (await _reportRepository.GetAll())
+                .Where(r => r.AssignedEmployee.Id == employee.Id)
+                .ToList();
         }
 
-        public Task<Report> CreateReport(Employee employee, ReportType type)
+        public async Task<Report> CreateReport(Employee employee, ReportType type)
         {
-            throw new NotImplementedException();
+            var report = new Report(employee, type);
+            return await _reportRepository.Add(report);
         }
 
-        public Task AddTaskToReport(Report report, JobTask task)
+        public async Task<Report> AddTaskToReport(Report report, JobTask task)
         {
-            throw new NotImplementedException();
+            if (report == null) throw new ArgumentNullException(nameof(report));
+            if (task == null) throw new ArgumentNullException(nameof(task));
+            
+            report.Tasks.Add(task);
+            await _reportRepository.SaveChanges();
+            return report;
         }
 
-        public Task SetDescription(Report report, string description)
+        public async Task<Report> SetDescription(Report report, string description)
         {
-            throw new NotImplementedException();
+            if (report == null) throw new ArgumentNullException(nameof(report));
+            if (description == null) throw new ArgumentNullException(nameof(description));
+
+            report.Description = description;
+            await _reportRepository.SaveChanges();
+            return report;
         }
 
-        public Task ChangeState(Report report, ReportState state)
+        public async Task<Report> ChangeState(Report report, ReportState state)
         {
-            throw new NotImplementedException();
+            if (report == null) throw new ArgumentNullException(nameof(report));
+
+            report.State = state;
+            await _reportRepository.SaveChanges();
+            return report;
         }
 
-        public Task<List<Report>> GetSubordinatesReportsForPeriod(Employee employee, TimeSpan period)
+        public async Task<IReadOnlyCollection<Report>> GetSubordinatesReportsForPeriod(
+            Employee employee,
+            uint countOfDays)
         {
-            throw new NotImplementedException();
+            if (countOfDays == 0) throw new ReportsAppException("Count of days must be > 0!");
+            if (employee == null) throw new ArgumentNullException(nameof(employee));
+            return (await _reportRepository.GetAll())
+                .Where(r => r.State == ReportState.Finished &&
+                            r.AssignedEmployee.Id == employee.Id &&
+                            DateTime.Now <= r.CreationTime.AddDays(countOfDays))
+                .ToList();
         }
 
-        public Task<List<Employee>> GetSubordinatesWithoutReportsForPeriod(Employee employee, TimeSpan period)
+        public async Task<IReadOnlyCollection<Employee>> GetSubordinatesWithoutReportsForPeriod(
+            Employee employee,
+            uint countOfDays)
         {
-            throw new NotImplementedException();
+            if (countOfDays == 0) throw new ReportsAppException("Count of days must be > 0!");
+            if (employee == null) throw new ArgumentNullException(nameof(employee));
+            
+            var subordinatesWithReport = (await _reportRepository.GetAll())
+                .Where(r => r.State == ReportState.Finished &&
+                            r.AssignedEmployee.Id == employee.Id &&
+                            DateTime.Now <= r.CreationTime.AddDays(countOfDays))
+                .Select(r => r.AssignedEmployee)
+                .ToList();
+
+            var allSubordinates = (await _employeeRepository.GetAll())
+                .Where(e => e.SupervisorId == employee.Id)
+                .ToList();
+
+            return allSubordinates.Except(subordinatesWithReport).ToList();
         }
     }
 }

@@ -1,77 +1,129 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Core.Domain.Entities;
+using Core.Domain.Entities.TaskChanges;
 using Core.Domain.ServicesAbstractions;
 using Core.Domain.Tools;
+using Core.RepositoryAbstractions;
 
 namespace Core.Services
 {
     public class JobTaskService : IJobTaskService
     {
-        public Task<List<JobTask>> GetAll()
+        private readonly IJobTaskRepository _taskRepository;
+        private readonly ITaskChangesRepository _changesRepository;
+
+        public JobTaskService(IJobTaskRepository taskRepository, ITaskChangesRepository changesRepository)
         {
-            throw new NotImplementedException();
+            _taskRepository = taskRepository ?? throw new ArgumentNullException(nameof(taskRepository));
+            _changesRepository = changesRepository ?? throw new ArgumentNullException(nameof(changesRepository));
         }
 
-        public Task<JobTask> GetById(Guid id)
+        public async Task<IReadOnlyCollection<JobTask>> GetAll()
         {
-            throw new NotImplementedException();
+            return await _taskRepository.GetAll();
         }
 
-        public Task<JobTask> FindByName(string name)
+        public async Task<JobTask> GetById(Guid id)
         {
-            throw new NotImplementedException();
+            return await _taskRepository.GetById(id);
         }
 
-        public Task<JobTask> FindByCreationTime(DateTime dateTime)
+        public async Task<JobTask> FindByName(string name)
         {
-            throw new NotImplementedException();
+            if (name == null)
+                throw new ArgumentNullException(nameof(name));
+            
+            return await _taskRepository.FindByName(name);
         }
 
-        public Task<JobTask> FindByLastChangeTime(DateTime dateTime)
+        public async Task<JobTask> FindByCreationTime(DateTime dateTime)
         {
-            throw new NotImplementedException();
+            return (await _taskRepository.GetAll()).FirstOrDefault(t => t.CreationTime == dateTime);
         }
 
-        public Task<List<JobTask>> FindAssignedTasks(Employee employee)
+        public async Task<JobTask> FindByLastChangeTime(DateTime dateTime)
         {
-            throw new NotImplementedException();
+            return (await _taskRepository.GetAll()).FirstOrDefault(
+                t => t.Changes.LastOrDefault()?.ChangeTime == dateTime);
         }
 
-        public Task<List<JobTask>> FindContributedTasks(Employee employee)
+        public async Task<IReadOnlyCollection<JobTask>> FindAssignedTasks(Employee employee)
         {
-            throw new NotImplementedException();
+            return (await _taskRepository.GetAll())
+                .Where(t => t.AssignedEmployee.Id == employee.Id)
+                .ToList();
         }
 
-        public Task<List<JobTask>> FindAssignedToSubordinatesTasks(Employee employee)
+        public async Task<IReadOnlyCollection<JobTask>> FindContributedTasks(Employee employee)
         {
-            throw new NotImplementedException();
+            return (await _taskRepository.GetAll())
+                .Where(t => t.Changes.Any(c => c.Author.Id == employee.Id))
+                .ToList();
         }
 
-        public Task<JobTask> CreateTask(string name, Employee assignedEmployee)
+        public async Task<IReadOnlyCollection<JobTask>> FindAssignedToSubordinatesTasks(Employee employee)
         {
-            throw new NotImplementedException();
+            return (await _taskRepository.GetAll())
+                .Where(t => t.AssignedEmployee.SupervisorId == employee.Id)
+                .ToList();
         }
 
-        public Task ChangeDescription(JobTask task, string description)
+        public async Task<JobTask> CreateTask(string name, Employee assignedEmployee, string description)
         {
-            throw new NotImplementedException();
+            var task = new JobTask(name, assignedEmployee, description);
+            return await _taskRepository.Add(task);
         }
 
-        public Task ChangeState(JobTask task, JobTaskState state)
+        public async Task<JobTask> ChangeDescription(JobTask task, string description)
         {
-            throw new NotImplementedException();
+            if (task == null) throw new ArgumentNullException(nameof(task));
+            task.Description = description ?? throw new ArgumentNullException(nameof(description));
+            var change = new DescriptionChange(task.AssignedEmployee, description);
+            task.Changes.Add(change);
+            await _changesRepository.Add(change);
+            await _changesRepository.SaveChanges();
+            await _taskRepository.SaveChanges();
+            return task;
         }
 
-        public Task ChangeAssignedEmployee(JobTask task, Employee employee)
+        public async Task<JobTask> ChangeState(JobTask task, JobTaskState state)
         {
-            throw new NotImplementedException();
+            if (task == null) throw new ArgumentNullException(nameof(task));
+            task.CurrentState = state;
+            var change = new StateChange(task.AssignedEmployee, state);
+            task.Changes.Add(change);
+            await _changesRepository.Add(change);
+            await _changesRepository.SaveChanges();
+            await _taskRepository.SaveChanges();
+            return task;
         }
 
-        public Task AddComment(JobTask task, Employee author, string message)
+        public async Task<JobTask> ChangeAssignedEmployee(JobTask task, Employee employee)
         {
-            throw new NotImplementedException();
+            if (task == null) throw new ArgumentNullException(nameof(task));
+            var change = new AssignedEmployeeChange(task.AssignedEmployee, employee);
+            task.AssignedEmployee = employee ?? throw new ArgumentNullException(nameof(employee));
+            task.Changes.Add(change);
+            await _changesRepository.Add(change);
+            await _changesRepository.SaveChanges();
+            await _taskRepository.SaveChanges();
+            return task;
+        }
+
+        public async Task<JobTask> AddComment(JobTask task, Employee author, string message)
+        {
+            if (task == null) throw new ArgumentNullException(nameof(task));
+            if (author == null) throw new ArgumentNullException(nameof(author));
+            if (message == null) throw new ArgumentNullException(nameof(message));
+            var comment = new CommentChange(author, message);
+            task.Changes.Add(comment);
+            await _changesRepository.Add(comment);
+            await _changesRepository.SaveChanges();
+            await _taskRepository.SaveChanges();
+            return task;
         }
     }
 }

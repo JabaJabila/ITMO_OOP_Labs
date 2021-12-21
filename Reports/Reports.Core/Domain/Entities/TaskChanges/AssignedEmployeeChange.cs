@@ -10,9 +10,11 @@ namespace Core.Domain.Entities.TaskChanges
         {
         }
         
-        public AssignedEmployeeChange(Employee newAssignedEmployee)
+        public AssignedEmployeeChange(Employee previousEmployee, Employee newAssignedEmployee)
+            : base(previousEmployee)
         {
-            NewAssignedEmployee = newAssignedEmployee ?? throw new ArgumentNullException(nameof(newAssignedEmployee));
+            NewAssignedEmployee = newAssignedEmployee
+                                  ?? throw new ArgumentNullException(nameof(newAssignedEmployee));
         }
     }
 }

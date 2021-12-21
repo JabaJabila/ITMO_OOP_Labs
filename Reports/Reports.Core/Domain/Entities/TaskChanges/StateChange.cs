@@ -10,7 +10,8 @@ namespace Core.Domain.Entities.TaskChanges
         {
         }
 
-        public StateChange(JobTaskState newState)
+        public StateChange(Employee author, JobTaskState newState)
+            : base(author)
         {
             NewState = newState;
         }

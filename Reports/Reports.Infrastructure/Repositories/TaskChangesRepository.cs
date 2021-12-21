@@ -6,7 +6,7 @@ using Core.RepositoryAbstractions;
 
 namespace Infrastructure.Repositories
 {
-    public class TaskChangesRepository : ITaskChangesRepository
+    public sealed class TaskChangesRepository : ITaskChangesRepository
     {
         public void Dispose()
         {
