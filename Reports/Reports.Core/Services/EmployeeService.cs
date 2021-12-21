@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Core.Domain.Entities;
 using Core.Domain.ServicesAbstractions;
@@ -27,8 +28,9 @@ namespace Core.Services
         {
             if (name == null)
                 throw new ArgumentNullException(nameof(name));
-            
-            return await _repository.FindByName(name);
+
+            return (await _repository.GetAll()).FirstOrDefault(e =>
+                e.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase));
         }
 
         public async Task<Employee> GetById(Guid id)

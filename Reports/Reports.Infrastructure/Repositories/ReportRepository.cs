@@ -3,44 +3,49 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Core.Domain.Entities;
 using Core.RepositoryAbstractions;
+using Infrastructure.DbContext;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace Infrastructure.Repositories
 {
     public sealed class ReportRepository : IReportRepository
     {
-        public void Dispose()
+        private readonly ReportsDatabaseContext _context;
+
+        public ReportRepository(ReportsDatabaseContext context)
         {
-            throw new NotImplementedException();
+            _context = context ?? throw new ArgumentNullException(nameof(context));
+        }
+        
+        public async void Dispose()
+        {
+            await _context.DisposeAsync();
         }
 
-        public Task<IReadOnlyCollection<Report>> GetAll()
+        public async Task<IReadOnlyCollection<Report>> GetAll()
         {
-            throw new NotImplementedException();
+            return await _context.Reports
+                .Include(r => r.AssignedEmployee)
+                .Include(r => r.Tasks)
+                .ToListAsync();
         }
 
-        public Task<Report> GetById(Guid id)
+        public async Task<Report> GetById(Guid id)
         {
-            throw new NotImplementedException();
+            return await _context.Reports.FindAsync(id);
         }
 
-        public Task<Report> Add(Report entity)
+        public async Task<Report> Add(Report entity)
         {
-            throw new NotImplementedException();
+            EntityEntry<Report> report = await _context.AddAsync(entity);
+            await SaveChanges();
+            return report.Entity;
         }
 
-        public Task Update(Report entity)
+        public async Task SaveChanges()
         {
-            throw new NotImplementedException();
-        }
-
-        public Task Delete(Guid id)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task SaveChanges()
-        {
-            throw new NotImplementedException();
+            await _context.SaveChangesAsync();
         }
     }
 }

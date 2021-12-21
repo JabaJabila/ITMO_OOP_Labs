@@ -29,7 +29,7 @@ namespace Infrastructure.Repositories
         {
             return await _context.Employees.Where(e => e.Status != EmployeeStatus.Fired).ToListAsync();
         }
-
+        
         public async Task<Employee> GetById(Guid id)
         {
             Employee employee = await _context.Employees.FindAsync(id);
@@ -52,12 +52,6 @@ namespace Infrastructure.Repositories
         public async Task SaveChanges()
         {
             await _context.SaveChangesAsync();
-        }
-
-        public async Task<Employee> FindByName(string name)
-        {
-            return await _context.Employees.FirstOrDefaultAsync(
-                e => e.Name == name && e.Status != EmployeeStatus.Fired);
         }
     }
 }

@@ -35,8 +35,9 @@ namespace Core.Services
         {
             if (name == null)
                 throw new ArgumentNullException(nameof(name));
-            
-            return await _taskRepository.FindByName(name);
+
+            return (await _taskRepository.GetAll()).FirstOrDefault(t =>
+                t.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase));
         }
 
         public async Task<JobTask> FindByCreationTime(DateTime dateTime)

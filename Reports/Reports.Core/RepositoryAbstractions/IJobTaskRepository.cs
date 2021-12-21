@@ -5,6 +5,5 @@ namespace Core.RepositoryAbstractions
 {
     public interface IJobTaskRepository : IRepository<JobTask>
     {
-        Task<JobTask> FindByName(string name);
     }
 }
