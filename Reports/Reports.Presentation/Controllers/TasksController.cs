@@ -1,9 +1,11 @@
 using System;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Core.Domain.Entities;
 using Core.Domain.ServicesAbstractions;
 using Core.Domain.Tools;
+using Core.Mappers;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Reports.Presentation.Controllers
@@ -14,11 +16,13 @@ namespace Reports.Presentation.Controllers
     {
         private readonly IJobTaskService _taskService;
         private readonly IEmployeeService _employeeService;
+        private readonly IJobTaskMapper _mapper;
 
-        public TasksController(IJobTaskService taskService, IEmployeeService employeeService)
+        public TasksController(IJobTaskService taskService, IEmployeeService employeeService, IJobTaskMapper mapper)
         {
             _taskService = taskService ?? throw new ArgumentNullException(nameof(taskService));
             _employeeService = employeeService ?? throw new ArgumentNullException(nameof(employeeService));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
         
         [HttpGet("get-one")]
@@ -31,21 +35,16 @@ namespace Reports.Presentation.Controllers
             JobTask result;
             if (id != Guid.Empty)
             {
-                try
-                {
-                    return Ok(await _taskService.GetById(id));
-                }
-                catch (Exception)
-                {
-                    return NotFound();
-                }
+                result = await _taskService.GetById(id);
+                if (result == null) return NotFound();
+                return Ok(_mapper.Map(result));
             }
 
             if (!string.IsNullOrWhiteSpace(name))
             {
                 result = await _taskService.FindByName(name);
                 if (result != null)
-                    return Ok(result);
+                    return Ok(_mapper.Map(result));
                 return NotFound();
             }
 
@@ -53,21 +52,23 @@ namespace Reports.Presentation.Controllers
             {
                 result = await _taskService.FindByCreationTime((DateTime)creationDateTime);
                 if (result != null)
-                    return Ok(result);
+                    return Ok(_mapper.Map(result));
                 return NotFound();
             }
             
             if (lastChangeDateTime == null) return StatusCode((int)HttpStatusCode.BadRequest);
             result = await _taskService.FindByLastChangeTime((DateTime)lastChangeDateTime);
             if (result != null)
-                return Ok(result);
+                return Ok(_mapper.Map(result));
             return NotFound();
         }
         
         [HttpGet("get-all")]
         public async Task<IActionResult> GetAll()
         {
-            return Ok(await _taskService.GetAll());
+            return Ok((await _taskService.GetAll())
+                .Select(t => _mapper.Map(t))
+                .ToList());
         }
         
         [HttpPost("create")]
@@ -83,7 +84,7 @@ namespace Reports.Presentation.Controllers
 
             try
             {
-                return Ok(await _taskService.CreateTask(name, employee, description));
+                return Ok(_mapper.Map(await _taskService.CreateTask(name, employee, description)));
             }
             catch (Exception)
             {
@@ -104,7 +105,7 @@ namespace Reports.Presentation.Controllers
                 JobTask task = await _taskService.GetById(id);
                 if (task == null)
                     return NotFound();
-                return Ok(await _taskService.ChangeDescription(task, newDescription));
+                return Ok(_mapper.Map(await _taskService.ChangeDescription(task, newDescription)));
             }
             catch (Exception)
             {
@@ -125,7 +126,7 @@ namespace Reports.Presentation.Controllers
                 JobTask task = await _taskService.GetById(id);
                 if (task == null)
                     return NotFound();
-                return Ok(await _taskService.ChangeState(task, state));
+                return Ok(_mapper.Map(await _taskService.ChangeState(task, state)));
             }
             catch (Exception)
             {
@@ -147,7 +148,7 @@ namespace Reports.Presentation.Controllers
                 Employee employee = await _employeeService.GetById(employeeId);
                 if (task == null || employee == null)
                     return NotFound();
-                return Ok(await _taskService.ChangeAssignedEmployee(task, employee));
+                return Ok(_mapper.Map(await _taskService.ChangeAssignedEmployee(task, employee)));
             }
             catch (Exception)
             {
@@ -170,7 +171,7 @@ namespace Reports.Presentation.Controllers
                 Employee employee = await _employeeService.GetById(employeeId);
                 if (task == null || employee == null)
                     return NotFound();
-                return Ok(await _taskService.AddComment(task, employee, text));
+                return Ok(_mapper.Map(await _taskService.AddComment(task, employee, text)));
             }
             catch (Exception)
             {
@@ -188,7 +189,9 @@ namespace Reports.Presentation.Controllers
                 Employee employee = await _employeeService.GetById(employeeId);
                 if (employee == null)
                     return NotFound();
-                return Ok(await _taskService.FindAssignedTasks(employee));
+                return Ok((await _taskService.FindAssignedTasks(employee))
+                    .Select(t => _mapper.Map(t))
+                    .ToList());
             }
             catch (Exception)
             {
@@ -206,7 +209,9 @@ namespace Reports.Presentation.Controllers
                 Employee employee = await _employeeService.GetById(employeeId);
                 if (employee == null)
                     return NotFound();
-                return Ok(await _taskService.FindContributedTasks(employee));
+                return Ok((await _taskService.FindContributedTasks(employee))
+                    .Select(t => _mapper.Map(t))
+                    .ToList());
             }
             catch (Exception)
             {
@@ -224,7 +229,9 @@ namespace Reports.Presentation.Controllers
                 Employee employee = await _employeeService.GetById(employeeId);
                 if (employee == null)
                     return NotFound();
-                return Ok(await _taskService.FindAssignedToSubordinatesTasks(employee));
+                return Ok((await _taskService.FindAssignedToSubordinatesTasks(employee))
+                    .Select(t => _mapper.Map(t))
+                    .ToList());
             }
             catch (Exception)
             {

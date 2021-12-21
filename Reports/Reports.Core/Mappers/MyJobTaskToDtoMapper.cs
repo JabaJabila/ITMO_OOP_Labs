@@ -2,17 +2,16 @@
 using System.Globalization;
 using System.Linq;
 using Core.Domain.Entities;
-using Core.Domain.Entities.TaskChanges;
 using Core.Domain.Tools;
 using Core.DTO;
 
 namespace Core.Mappers
 {
-    public class MyJobTaskToDtoMapper : IMapper<JobTaskDto, JobTask>
+    public class MyJobTaskToDtoMapper : IJobTaskMapper
     {
-        private readonly IMapper<TaskChangeDto, JobTaskChange> _changeMapper;
+        private readonly ITaskChangeMapper _changeMapper;
 
-        public MyJobTaskToDtoMapper(IMapper<TaskChangeDto, JobTaskChange> changeMapper)
+        public MyJobTaskToDtoMapper(ITaskChangeMapper changeMapper)
         {
             _changeMapper = changeMapper ?? throw new ArgumentNullException(nameof(changeMapper));
         }

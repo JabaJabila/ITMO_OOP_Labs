@@ -7,7 +7,7 @@ using Core.DTO;
 
 namespace Core.Mappers
 {
-    public class MyReportToDtoMapper : IMapper<ReportDto, Report>
+    public class MyReportToDtoMapper : IReportMapper
     {
         public ReportDto Map(Report entity)
         {

@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Core.Domain.Entities;
 using Core.Domain.ServicesAbstractions;
 using Core.Domain.Tools;
+using Core.Mappers;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Reports.Presentation.Controllers
@@ -15,15 +17,21 @@ namespace Reports.Presentation.Controllers
         private readonly IReportService _reportsService;
         private readonly IEmployeeService _employeeService;
         private readonly IJobTaskService _taskService;
+        private readonly IReportMapper _reportMapper;
+        private readonly IEmployeeMapper _employeeMapper;
 
         public ReportsController(
             IReportService reportService,
             IEmployeeService employeeService,
-            IJobTaskService taskService)
+            IJobTaskService taskService,
+            IReportMapper reportMapper,
+            IEmployeeMapper employeeMapper)
         {
             _reportsService = reportService ?? throw new ArgumentNullException(nameof(reportService));
             _employeeService = employeeService ?? throw new ArgumentNullException(nameof(employeeService));
             _taskService = taskService ?? throw new ArgumentNullException(nameof(taskService));
+            _reportMapper = reportMapper ?? throw new ArgumentNullException(nameof(reportMapper));
+            _employeeMapper = employeeMapper ?? throw new ArgumentNullException(nameof(employeeMapper));
         }
 
         [HttpGet("from-employee")]
@@ -36,7 +44,9 @@ namespace Reports.Presentation.Controllers
                 Employee employee = await _employeeService.GetById(employeeId);
                 if (employee == null)
                     return NotFound();
-                return Ok(await _reportsService.GetReports(employee));
+                return Ok((await _reportsService.GetReports(employee))
+                    .Select(r => _reportMapper.Map(r))
+                    .ToList());
             }
             catch (Exception)
             {
@@ -49,7 +59,7 @@ namespace Reports.Presentation.Controllers
         {
             try
             {
-                return Ok(await _reportsService.GetById(id));
+                return Ok(_reportMapper.Map(await _reportsService.GetById(id)));
             }
             catch (Exception)
             {
@@ -69,7 +79,7 @@ namespace Reports.Presentation.Controllers
 
             try
             {
-                return Ok(await _reportsService.CreateReport(employee, type));
+                return Ok(_reportMapper.Map(await _reportsService.CreateReport(employee, type)));
             }
             catch (Exception)
             {
@@ -90,7 +100,7 @@ namespace Reports.Presentation.Controllers
                 Report report = await _reportsService.GetById(id);
                 if (report == null)
                     return NotFound();
-                return Ok(await _reportsService.SetDescription(report, newDescription));
+                return Ok(_reportMapper.Map(await _reportsService.SetDescription(report, newDescription)));
             }
             catch (Exception)
             {
@@ -111,7 +121,7 @@ namespace Reports.Presentation.Controllers
                 Report report = await _reportsService.GetById(id);
                 if (report == null)
                     return NotFound();
-                return Ok(await _reportsService.ChangeState(report, state));
+                return Ok(_reportMapper.Map(await _reportsService.ChangeState(report, state)));
             }
             catch (Exception)
             {
@@ -132,7 +142,7 @@ namespace Reports.Presentation.Controllers
                 JobTask task = await _taskService.GetById(taskId);
                 if (report == null || task == null)
                     return NotFound();
-                return Ok(await _reportsService.AddTaskToReport(report, task));
+                return Ok(_reportMapper.Map(await _reportsService.AddTaskToReport(report, task)));
             }
             catch (Exception)
             {
@@ -152,7 +162,9 @@ namespace Reports.Presentation.Controllers
                 Employee employee = await _employeeService.GetById(employeeId);
                 if (employee == null)
                     return NotFound();
-                return Ok(await _reportsService.GetSubordinatesReportsForPeriod(employee, countOfDays));
+                return Ok((await _reportsService.GetSubordinatesReportsForPeriod(employee, countOfDays))
+                    .Select(r => _reportMapper.Map(r))
+                    .ToList());
             }
             catch (Exception)
             {
@@ -172,7 +184,9 @@ namespace Reports.Presentation.Controllers
                 Employee employee = await _employeeService.GetById(employeeId);
                 if (employee == null)
                     return NotFound();
-                return Ok(await _reportsService.GetSubordinatesWithoutReportsForPeriod(employee, countOfDays));
+                return Ok((await _reportsService.GetSubordinatesWithoutReportsForPeriod(employee, countOfDays))
+                    .Select(e => _employeeMapper.Map(e))
+                    .ToList());
             }
             catch (Exception)
             {

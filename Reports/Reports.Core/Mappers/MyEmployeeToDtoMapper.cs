@@ -5,7 +5,7 @@ using Core.DTO;
 
 namespace Core.Mappers
 {
-    public class MyEmployeeToDtoMapper : IMapper<EmployeeDto, Employee>
+    public class MyEmployeeToDtoMapper : IEmployeeMapper
     {
         public EmployeeDto Map(Employee entity)
         {

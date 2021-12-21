@@ -1,4 +1,5 @@
 using Core.Domain.ServicesAbstractions;
+using Core.Mappers;
 using Core.RepositoryAbstractions;
 using Core.Services;
 using Infrastructure.DbContext;
@@ -35,6 +36,10 @@ namespace Reports.Presentation
                 opt.UseSqlServer(Configuration.GetConnectionString("MyServer"));
             });
 
+            services.AddScoped<IEmployeeMapper, MyEmployeeToDtoMapper>();
+            services.AddScoped<ITaskChangeMapper, MyTaskChangeToDtoMapper>();
+            services.AddScoped<IJobTaskMapper, MyJobTaskToDtoMapper>();
+            services.AddScoped<IReportMapper, MyReportToDtoMapper>();
             services.AddScoped<IEmployeeRepository, EmployeeRepository>();
             services.AddScoped<IEmployeeService, EmployeeService>();
             services.AddScoped<IJobTaskRepository, JobTaskRepository>();
@@ -42,7 +47,7 @@ namespace Reports.Presentation
             services.AddScoped<IJobTaskService, JobTaskService>();
             services.AddScoped<IReportRepository, ReportRepository>();
             services.AddScoped<IReportService, ReportService>();
-            
+
             services.AddControllers();
         }
         

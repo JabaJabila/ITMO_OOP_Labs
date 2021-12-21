@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Core.Domain.Entities;
 using Core.Domain.ServicesAbstractions;
+using Core.Mappers;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Reports.Presentation.Controllers
@@ -12,16 +14,25 @@ namespace Reports.Presentation.Controllers
     public class EmployeeController : ControllerBase
     {
         private readonly IEmployeeService _service;
+        private readonly IEmployeeMapper _mapper;
 
-        public EmployeeController(IEmployeeService service)
+        public EmployeeController(IEmployeeService service, IEmployeeMapper mapper)
         {
             _service = service ?? throw new ArgumentNullException(nameof(service));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
         [HttpPost]
-        public async Task<Employee> Create([FromQuery] string name)
+        public async Task<IActionResult> Create([FromQuery] string name)
         {
-            return await _service.CreateEmployee(name);
+            try
+            {
+                return Ok(_mapper.Map(await _service.CreateEmployee(name)));
+            }
+            catch (Exception)
+            {
+                return StatusCode((int) HttpStatusCode.BadRequest);
+            }
         }
 
         [HttpGet("get-one")]
@@ -32,14 +43,14 @@ namespace Reports.Presentation.Controllers
             {
                 result = await _service.GetById(id);
                 if (result != null)
-                    return Ok(result);
+                    return Ok(_mapper.Map(result));
                 return NotFound();
             }
 
             if (string.IsNullOrWhiteSpace(name)) return StatusCode((int) HttpStatusCode.BadRequest);
             result = await _service.FindByName(name);
             if (result != null)
-                return Ok(result);
+                return Ok(_mapper.Map(result));
             
             return NotFound();
         }
@@ -47,7 +58,7 @@ namespace Reports.Presentation.Controllers
         [HttpGet("get-all")]
         public async Task<IActionResult> GetAll()
         {
-            return Ok(await _service.GetAll());
+            return Ok((await _service.GetAll()).Select(e => _mapper.Map(e)).ToList());
         }
 
         [HttpDelete]
@@ -59,7 +70,7 @@ namespace Reports.Presentation.Controllers
                 Employee result = await _service.Delete(id);
                 if (result == null)
                     return NotFound();
-                return Ok(result);
+                return Ok(_mapper.Map(result));
             }
             catch (Exception)
             {
@@ -80,7 +91,7 @@ namespace Reports.Presentation.Controllers
                 Employee result = await _service.SetSupervisor(currentEmployeeId, supervisorId);
                 if (result == null)
                     return NotFound();
-                return Ok(result);
+                return Ok(_mapper.Map(result));
             }
             catch (Exception)
             {

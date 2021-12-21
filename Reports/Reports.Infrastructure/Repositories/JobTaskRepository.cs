@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Core.Domain.Entities;
-using Core.Domain.Tools;
 using Core.RepositoryAbstractions;
 using Infrastructure.DbContext;
 using Microsoft.EntityFrameworkCore;
@@ -29,16 +28,14 @@ namespace Infrastructure.Repositories
         {
             return await _context.JobTasks
                 .Include(t => t.Changes)
+                .ThenInclude(c => c.Author)
                 .Include(t => t.AssignedEmployee)
                 .ToListAsync();
         }
 
         public async Task<JobTask> GetById(Guid id)
         {
-            JobTask task = await _context.JobTasks.FindAsync(id);
-            await _context.Entry(task).Collection(t => t.Changes).LoadAsync();
-            await _context.Entry(task).Reference(t => t.AssignedEmployee).LoadAsync();
-            return task;
+            return (await GetAll()).FirstOrDefault(t => t.Id == id);
         }
 
         public async Task<JobTask> Add(JobTask entity)
