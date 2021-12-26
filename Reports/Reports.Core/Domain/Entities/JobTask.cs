@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
+using Core.Domain.Entities.Enums;
 using Core.Domain.Entities.TaskChanges;
-using Core.Domain.Tools;
 
 namespace Core.Domain.Entities
 {

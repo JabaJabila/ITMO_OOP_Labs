@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using Core.Domain.Entities;
+﻿using Core.Domain.Entities;
 
 namespace Core.RepositoryAbstractions
 {

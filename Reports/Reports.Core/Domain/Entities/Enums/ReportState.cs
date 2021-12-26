@@ -1,4 +1,4 @@
-﻿namespace Core.Domain.Tools
+﻿namespace Core.Domain.Entities.Enums
 {
     public enum ReportState
     {

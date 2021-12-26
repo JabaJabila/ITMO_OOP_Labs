@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Core.Domain.Entities;
+using Core.Domain.Entities.Enums;
 using Core.Domain.Entities.TaskChanges;
 using Core.Domain.ServicesAbstractions;
-using Core.Domain.Tools;
 using Core.RepositoryAbstractions;
 
 namespace Core.Services

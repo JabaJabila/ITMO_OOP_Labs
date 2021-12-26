@@ -3,8 +3,8 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Core.Domain.Entities;
+using Core.Domain.Entities.Enums;
 using Core.Domain.ServicesAbstractions;
-using Core.Domain.Tools;
 using Core.Mappers;
 using Microsoft.AspNetCore.Mvc;
 

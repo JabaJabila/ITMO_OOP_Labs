@@ -1,4 +1,5 @@
-﻿using Core.Domain.Tools;
+﻿using Core.Domain.Entities.Enums;
+using Core.Domain.Tools;
 
 namespace Core.Domain.Entities.TaskChanges
 {

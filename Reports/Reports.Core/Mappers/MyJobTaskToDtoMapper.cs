@@ -2,7 +2,7 @@
 using System.Globalization;
 using System.Linq;
 using Core.Domain.Entities;
-using Core.Domain.Tools;
+using Core.Domain.Entities.Enums;
 using Core.DTO;
 
 namespace Core.Mappers
