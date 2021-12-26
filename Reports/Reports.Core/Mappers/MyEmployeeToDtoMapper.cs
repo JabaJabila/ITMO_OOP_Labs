@@ -1,6 +1,6 @@
 ﻿using System;
 using Core.Domain.Entities;
-using Core.Domain.Entities.Enums;
+using Core.Domain.Enums;
 using Core.DTO;
 
 namespace Core.Mappers

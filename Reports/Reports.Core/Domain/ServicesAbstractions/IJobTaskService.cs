@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Core.Domain.Entities;
-using Core.Domain.Entities.Enums;
+using Core.Domain.Enums;
 
 namespace Core.Domain.ServicesAbstractions
 {

@@ -1,6 +1,6 @@
 using Core.Domain.Entities;
-using Core.Domain.Entities.Enums;
 using Core.Domain.Entities.TaskChanges;
+using Core.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 

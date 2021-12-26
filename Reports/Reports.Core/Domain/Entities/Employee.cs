@@ -1,5 +1,5 @@
 ﻿using System;
-using Core.Domain.Entities.Enums;
+using Core.Domain.Enums;
 
 namespace Core.Domain.Entities
 {

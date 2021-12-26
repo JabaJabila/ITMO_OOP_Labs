@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Globalization;
-using Core.Domain.Entities.Enums;
 using Core.Domain.Entities.TaskChanges;
+using Core.Domain.Enums;
 using Core.DTO;
 
 namespace Core.Mappers
