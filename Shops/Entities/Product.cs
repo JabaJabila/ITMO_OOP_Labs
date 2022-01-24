@@ -8,7 +8,7 @@ namespace Shops.Entities
         public Product(string name)
         {
             Id = _productUniqueId++;
-            Name = name ?? throw new ArgumentNullException(nameof(name), $"{nameof(name)} can't be null!");
+            Name = name ?? throw new ArgumentNullException(nameof(name));
         }
 
         public int Id { get; }

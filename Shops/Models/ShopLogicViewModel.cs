@@ -14,9 +14,7 @@ namespace Shops.Models
 
         public ShopLogicViewModel(ShopManager manager)
         {
-            _manager = manager ?? throw new ArgumentNullException(
-                nameof(manager),
-                $"{nameof(manager)} can't be null!");
+            _manager = manager ?? throw new ArgumentNullException(nameof(manager));
         }
 
         public IEnumerable<string> GetDataForShopTable(char tableSeparator)

@@ -8,7 +8,7 @@ namespace Shops.Entities
         private decimal _balance;
         public Person(string name, decimal balance)
         {
-            Name = name ?? throw new ArgumentNullException(nameof(name), $"{nameof(name)} can't be null!");
+            Name = name ?? throw new ArgumentNullException(nameof(name));
             Balance = balance;
         }
 

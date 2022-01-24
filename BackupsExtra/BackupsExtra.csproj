@@ -27,4 +27,10 @@
     <ProjectReference Include="..\Backups\Backups.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="..\.editorconfig">
+      <Link>.editorconfig</Link>
+    </Content>
+  </ItemGroup>
+
 </Project>

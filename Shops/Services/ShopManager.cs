@@ -23,7 +23,7 @@ namespace Shops.Services
         public void RegisterShop(Shop shop)
         {
             if (shop == null)
-                throw new ArgumentNullException(nameof(shop), $"{nameof(shop)} can't be null!");
+                throw new ArgumentNullException(nameof(shop));
 
             _allShops.Add(shop);
         }

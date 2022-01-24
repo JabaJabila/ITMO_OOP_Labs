@@ -6,15 +6,15 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <None Include="..\..\coding\itmo-mentor\OopLabs-template\.editorconfig">
-        <Link>.editorconfig</Link>
-      </None>
-    </ItemGroup>
-
-    <ItemGroup>
       <ProjectReference Include="..\BackupsExtra\BackupsExtra.csproj" />
       <ProjectReference Include="..\BackupsServer\BackupsServer.csproj" />
       <ProjectReference Include="..\Backups\Backups.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Include="..\.editorconfig">
+        <Link>.editorconfig</Link>
+      </Content>
     </ItemGroup>
 
 </Project>

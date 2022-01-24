@@ -6,9 +6,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <None Include="..\..\coding\itmo-mentor\OopLabs-template\.editorconfig">
+      <Content Include="..\.editorconfig">
         <Link>.editorconfig</Link>
-      </None>
+      </Content>
     </ItemGroup>
 
 </Project>
